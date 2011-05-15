@@ -1,0 +1,357 @@
+
+#include <utility>
+#include <string>
+#include "incl.h"
+#include "policy.h"
+#include "string_traits.h"
+#include "encoding/utf8_encoding_traits.h"
+
+namespace boost {
+namespace ustr {
+
+template <
+    typename StringT,
+    typename StringTraits,
+    typename EncodingTraits
+>
+class unicode_string_adapter;
+
+template <
+    typename StringT,
+    typename StringTraits,
+    typename EncodingTraits
+>
+class unicode_string_adapter_builder;
+
+
+template <
+    typename StringT,
+    typename StringTraits = string_traits<StringT>,
+    typename EncodingTraits = utf_encoding_traits< 
+        StringTraits::codeunit_size, StringTraits, replace_policy<'?'> 
+    >
+>
+class unicode_string_adapter
+{
+  public:
+    typedef StringTraits                                            string_traits;
+    typedef EncodingTraits                                          encoding_traits;
+
+    typedef unicode_string_adapter<
+        StringT, StringTraits, EncodingTraits>                      const_adapter_type;
+    typedef unicode_string_adapter_builder<
+        StringT, StringTraits, EncodingTraits>                      mutable_adapter_type;
+
+    typedef typename string_traits::string_type                     string_type;
+    typedef typename string_traits::raw_strptr_type                 raw_strptr_type;
+    typedef typename string_traits::const_strptr_type               const_strptr_type;
+    typedef typename string_traits::mutable_strptr_type             mutable_strptr_type;
+
+    typedef typename string_traits::codeunit_type                   codeunit_type;
+
+    typedef typename 
+        string_traits::codeunit_iterator_type                       codeunit_iterator_type;
+
+    typedef typename 
+        encoding_traits::const_codepoint_iterator_type              const_codepoint_iterator_type;
+    typedef typename 
+        encoding_traits::mutable_codepoint_iterator_type            mutable_codepoint_iterator_type;
+
+    typedef unicode_string_adapter<
+        StringT, StringTraits, EncodingTraits>                      this_type;
+    
+    /*
+     * Implicit lightweight copy construction from other const adapter.
+     * The two const adapter will share the same underlying buffer since 
+     * they are immutable.
+     */
+    unicode_string_adapter(const this_type& other) :
+        _buffer(other.get_buffer())
+    {
+        validate();
+    }
+
+    /*
+     * Implicit lightweight move construction from other const adapter.
+     * The move construction skips the atomic reference count increment
+     * of the smart pointer to the underlying shared buffer.
+     */
+    unicode_string_adapter(this_type&& other) :
+        _buffer(std::move(other._buffer))
+    {
+        validate();
+    }
+
+    /*
+     * Implicit conversion from any const adapter of different encodings.
+     */
+    template <typename StringT_, typename StringTraits_, typename EncodingTraits_>
+    unicode_string_adapter(const unicode_string_adapter<
+                StringT_, StringTraits_, EncodingTraits_>& other)
+    {
+        mutable_adapter_type buffer;
+        buffer.append(other);
+
+        _buffer = string_traits::mutable_strptr::release(buffer.release());
+    }
+
+    /*
+     * Explicit copy construction from a raw string reference.
+     * A new copy of string content is allocated.
+     */
+    explicit unicode_string_adapter(const string_type& other) :
+        _buffer(string_traits::new_string(other))
+    {
+        validate();
+    }
+
+    /*
+     * Explicit lightweight copy construction from a const pointer to the string.
+     */
+    explicit unicode_string_adapter(const const_strptr_type& other) :
+        _buffer(other)
+    {
+        validate();
+    }
+
+    /*
+     * Explicit lightweight move construction from a const pointer to the string.
+     */
+    explicit unicode_string_adapter(const_strptr_type&& other) :
+        _buffer(std::forward<const_strptr_type>(other))
+    {
+        validate();
+    }
+
+    /*
+     * Explicit lightweight construction from a raw pointer to the string.
+     * The raw pointer is adopted and now owned by this class.
+     */
+    explicit unicode_string_adapter(raw_strptr_type other) :
+        _buffer(other)
+    {
+        validate();
+    }
+
+    /*
+     * Explicit copy construction from existing mutable adapter.
+     */
+    explicit unicode_string_adapter(const mutable_adapter_type& other) :
+        _buffer(string_traits::mutable_strptr::release(other.clone_buffer()))
+    {
+        validate();
+    }
+
+    /*
+     * Implicit move construction from existing mutable adapter.
+     */
+    unicode_string_adapter(mutable_adapter_type&& other) :
+        _buffer(string_traits::mutable_strptr::release(other.release()))
+    {
+        validate();
+    }
+
+    mutable_adapter_type edit() const {
+        const raw_strptr_type original_buffer = string_traits::const_strptr::get(_buffer);
+        raw_strptr_type new_buffer = string_traits::clone_string(original_buffer);
+        return mutable_adapter_type(new_buffer);
+    }
+
+    const_codepoint_iterator_type begin() const {
+        return codepoint_begin();
+    }
+
+    const_codepoint_iterator_type end() const {
+        return codepoint_end();
+    }
+
+    const_codepoint_iterator_type codepoint_begin() const {
+        return const_codepoint_iterator_type(
+                string_traits::const_strptr::codeunit_begin(_buffer), 
+                string_traits::const_strptr::codeunit_end(_buffer));
+    }
+
+    const_codepoint_iterator_type codepoint_end() const {
+        return const_codepoint_iterator_type(
+                string_traits::const_strptr::codeunit_end(_buffer));
+    }
+
+    const_strptr_type get_buffer() const {
+        return _buffer;
+    }
+
+    /*
+     * Create a string object on stack from the underlying string object on heap.
+     * It is not possible to return a reference as the new string object is created
+     * on the fly.
+     */
+    string_type to_string() const {
+        return string_traits::make_string(
+                string_traits::const_strptr::get(_buffer));
+    }
+
+    /*
+     * Compare any two const string adapter with different encodings to determine
+     * whether they contains the same code point. The comparison is done at code point
+     * level so it may not be entirely accurate, but it is more efficient. A full blown
+     * normalized comparison function is available at the supplement Unicode utility library.
+     */
+    template<typename StringT_, typename StringTraits_, typename EncodingTraits_>
+    bool operator ==(const unicode_string_adapter<
+            StringT_, StringTraits_, EncodingTraits_>& other) const 
+    {
+        if(other.codepoint_length() != codepoint_length()) {
+            return false;
+        }
+
+        const_codepoint_iterator_type it = codepoint_begin();
+        const_codepoint_iterator_type other_it = other.codepoint_begin();
+
+        while(it != codepoint_end()) {
+            if(*it != *other_it) {
+                return false;
+            }
+            ++it;
+            ++other_it;
+        }
+
+        return true;
+    }
+
+    string_type operator *() {
+        return to_string();
+    }
+
+    size_t length() const {
+        return codepoint_length();
+    }
+
+    size_t codepoint_length() const {
+        size_t length = 0;
+        for(const_codepoint_iterator_type it = codepoint_begin(); it != codepoint_end(); ++it) {
+            ++length;
+        }
+        return length;
+    }
+
+    void validate() {
+
+    }
+
+  private:
+    const_strptr_type _buffer;
+};
+
+template <
+    typename StringT,
+    typename StringTraits = string_traits<StringT>,
+    typename EncodingTraits = utf_encoding_traits< 
+        StringTraits::codeunit_size, StringTraits, replace_policy<'?'> 
+    >
+>
+class unicode_string_adapter_builder
+{
+  public:
+    typedef StringTraits                                            string_traits;
+    typedef EncodingTraits                                          encoding_traits;
+
+    typedef unicode_string_adapter<
+        StringT, StringTraits, EncodingTraits>                      const_adapter_type;
+    typedef unicode_string_adapter_builder<
+        StringT, StringTraits, EncodingTraits>                      mutable_adapter_type;
+
+    typedef typename string_traits::string_type                     string_type;
+    typedef typename string_traits::raw_strptr_type                 raw_strptr_type;
+    typedef typename string_traits::const_strptr_type               const_strptr_type;
+    typedef typename string_traits::mutable_strptr_type             mutable_strptr_type;
+
+    typedef typename string_traits::codeunit_type                   codeunit_type;
+
+    typedef typename 
+        string_traits::codeunit_iterator_type                       codeunit_iterator_type;
+
+    typedef typename 
+        encoding_traits::const_codepoint_iterator_type              const_codepoint_iterator_type;
+    typedef typename 
+        encoding_traits::mutable_codepoint_iterator_type            mutable_codepoint_iterator_type;
+
+    typedef unicode_string_adapter_builder<
+        StringT, StringTraits, EncodingTraits>                      this_type;
+
+    unicode_string_adapter_builder() :
+        _buffer()
+    { }
+
+    mutable_strptr_type clone_buffer() {
+        raw_strptr_type original_buffer = string_traits::mutable_strptr::get(_buffer);
+        raw_strptr_type new_buffer = string_traits::clone_string(original_buffer);
+        return mutable_strptr_type(new_buffer);
+    }
+
+    mutable_strptr_type release() {
+        return mutable_strptr_type(string_traits::mutable_strptr::release(_buffer));
+    }
+
+    /*
+     * Lightweight conversion from mutable adapter to const adapter by
+     * passing the underlying buffer to the new const adapter object.
+     *
+     * The difference of this with the explicit copy construction:
+     *
+     *      unicode_string_adapter(const unicode_string_adapter_builder&)
+     *
+     * is that the above is a copy construction where a new copy of string is created.
+     */
+    const_adapter_type freeze() {
+        return const_adapter_type(string_traits::mutable_strptr::release(_buffer));
+    }
+
+    mutable_codepoint_iterator_type begin() {
+        return codepoint_begin();
+    }
+
+    mutable_codepoint_iterator_type codepoint_begin() {
+        return mutable_codepoint_iterator_type(&_buffer);
+    }
+
+    /*
+     * The append operations are not thread safe
+     */
+    void append(const codepoint_type& codepoint) {
+        encoding_traits::append_codepoint(_buffer, codepoint);
+    }
+
+    template <
+        typename StringT_, typename StringTraits_, typename EncodingTraits_>
+    void append(const unicode_string_adapter<
+        StringT_, StringTraits_, EncodingTraits_>& str) {
+
+        typedef unicode_string_adapter<
+            StringT_, StringTraits_, EncodingTraits_>       other_type;
+
+        typedef typename 
+            other_type::codepoint_iterator_type             other_codepoint_iterator_type;
+
+        size_t codeunit_length = encoding_traits::estimate_codeunit_length(str.codepoint_length());
+        string_traits::mutable_strptr::reserve_space(_buffer, codeunit_length);
+
+        for(other_codepoint_iterator_type it = str.codepoint_begin();
+            it != str.codepoint_end(); ++it) 
+        {
+            codepoint_type codepoint = *it;
+            append(codepoint);
+        }
+    }
+
+  private:
+    unicode_string_adapter_builder(this_type&) = delete;
+    bool operator ==(const this_type&) const = delete;
+    this_type& operator =(const this_type&) = delete;
+
+    mutable_strptr_type _buffer;
+};
+
+
+
+} // namespace ustr
+} // namespace boost
