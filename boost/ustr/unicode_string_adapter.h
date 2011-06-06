@@ -1,6 +1,8 @@
 
 #include <utility>
 #include <string>
+#include <algorithm>
+#include <iterator>
 #include "incl.h"
 #include "policy.h"
 #include "string_traits.h"
@@ -53,9 +55,12 @@ class unicode_string_adapter
         string_traits::codeunit_iterator_type                       codeunit_iterator_type;
 
     typedef typename 
-        encoding_traits::const_codepoint_iterator_type              const_codepoint_iterator_type;
+        encoding_traits::codepoint_iterator_type                    codepoint_iterator_type;
     typedef typename 
-        encoding_traits::mutable_codepoint_iterator_type            mutable_codepoint_iterator_type;
+        std::back_insert_iterator<mutable_adapter_type>             codepoint_output_iterator_type;
+
+    typedef typename
+        encoding_traits::raw_char_type                              raw_char_type;
 
     typedef unicode_string_adapter<
         StringT, StringTraits, EncodingTraits>                      this_type;
@@ -92,16 +97,35 @@ class unicode_string_adapter
         mutable_adapter_type buffer;
         buffer.append(other);
 
-        _buffer = string_traits::mutable_strptr::release(buffer.release());
+        _buffer.reset(string_traits::mutable_strptr::release(buffer.release()));
     }
 
     /*
-     * Explicit copy construction from a raw string reference.
+     * Explicit construction from a raw string reference.
      * A new copy of string content is allocated.
      */
     explicit unicode_string_adapter(const string_type& other) :
         _buffer(string_traits::new_string(other))
     {
+        validate();
+    }
+
+    /*
+     * Explicit construction from a null terminated raw cstring pointer 
+     * that is assumed to be stored in this class' encoding.
+     */
+    explicit unicode_string_adapter(const raw_char_type* other) {
+        mutable_strptr_type buffer;
+        while(*other != 0) {
+            // copy the raw content into the correct string container type.
+            string_traits::mutable_strptr::append(buffer, *other);
+            ++other;
+        }
+
+        // assign the new string container to the buffer pointer
+        _buffer.reset(string_traits::mutable_strptr::release(buffer));
+
+        // validate the encoding correctness of the raw string.
         validate();
     }
 
@@ -133,6 +157,7 @@ class unicode_string_adapter
         validate();
     }
 
+
     /*
      * Explicit copy construction from existing mutable adapter.
      */
@@ -157,22 +182,22 @@ class unicode_string_adapter
         return mutable_adapter_type(new_buffer);
     }
 
-    const_codepoint_iterator_type begin() const {
+    codepoint_iterator_type begin() const {
         return codepoint_begin();
     }
 
-    const_codepoint_iterator_type end() const {
+    codepoint_iterator_type end() const {
         return codepoint_end();
     }
 
-    const_codepoint_iterator_type codepoint_begin() const {
-        return const_codepoint_iterator_type(
+    codepoint_iterator_type codepoint_begin() const {
+        return codepoint_iterator_type(
                 string_traits::const_strptr::codeunit_begin(_buffer), 
                 string_traits::const_strptr::codeunit_end(_buffer));
     }
 
-    const_codepoint_iterator_type codepoint_end() const {
-        return const_codepoint_iterator_type(
+    codepoint_iterator_type codepoint_end() const {
+        return codepoint_iterator_type(
                 string_traits::const_strptr::codeunit_end(_buffer));
     }
 
@@ -204,8 +229,8 @@ class unicode_string_adapter
             return false;
         }
 
-        const_codepoint_iterator_type it = codepoint_begin();
-        const_codepoint_iterator_type other_it = other.codepoint_begin();
+        codepoint_iterator_type it = codepoint_begin();
+        codepoint_iterator_type other_it = other.codepoint_begin();
 
         while(it != codepoint_end()) {
             if(*it != *other_it) {
@@ -228,7 +253,7 @@ class unicode_string_adapter
 
     size_t codepoint_length() const {
         size_t length = 0;
-        for(const_codepoint_iterator_type it = codepoint_begin(); it != codepoint_end(); ++it) {
+        for(codepoint_iterator_type it = codepoint_begin(); it != codepoint_end(); ++it) {
             ++length;
         }
         return length;
@@ -255,6 +280,9 @@ class unicode_string_adapter_builder
     typedef StringTraits                                            string_traits;
     typedef EncodingTraits                                          encoding_traits;
 
+    typedef unicode_string_adapter_builder<
+        StringT, StringTraits, EncodingTraits>                      this_type;
+
     typedef unicode_string_adapter<
         StringT, StringTraits, EncodingTraits>                      const_adapter_type;
     typedef unicode_string_adapter_builder<
@@ -271,12 +299,12 @@ class unicode_string_adapter_builder
         string_traits::codeunit_iterator_type                       codeunit_iterator_type;
 
     typedef typename 
-        encoding_traits::const_codepoint_iterator_type              const_codepoint_iterator_type;
+        encoding_traits::codepoint_iterator_type                    codepoint_iterator_type;
     typedef typename 
-        encoding_traits::mutable_codepoint_iterator_type            mutable_codepoint_iterator_type;
+        std::back_insert_iterator<this_type>                        codepoint_output_iterator_type;
 
-    typedef unicode_string_adapter_builder<
-        StringT, StringTraits, EncodingTraits>                      this_type;
+    typedef codepoint_type                                          value_type;
+
 
     unicode_string_adapter_builder() :
         _buffer()
@@ -306,12 +334,12 @@ class unicode_string_adapter_builder
         return const_adapter_type(string_traits::mutable_strptr::release(_buffer));
     }
 
-    mutable_codepoint_iterator_type begin() {
+    codepoint_output_iterator_type begin() {
         return codepoint_begin();
     }
 
-    mutable_codepoint_iterator_type codepoint_begin() {
-        return mutable_codepoint_iterator_type(&_buffer);
+    codepoint_output_iterator_type codepoint_begin() {
+        return codepoint_output_iterator_type(*this);
     }
 
     /*
@@ -321,26 +349,19 @@ class unicode_string_adapter_builder
         encoding_traits::append_codepoint(_buffer, codepoint);
     }
 
+    void push_back(const codepoint_type& codepoint) {
+        append(codepoint);
+    }
+
     template <
         typename StringT_, typename StringTraits_, typename EncodingTraits_>
     void append(const unicode_string_adapter<
         StringT_, StringTraits_, EncodingTraits_>& str) {
 
-        typedef unicode_string_adapter<
-            StringT_, StringTraits_, EncodingTraits_>       other_type;
+        // size_t codeunit_length = encoding_traits::estimate_codeunit_length(str.codepoint_length());
+        // string_traits::mutable_strptr::reserve_space(_buffer, codeunit_length);
 
-        typedef typename 
-            other_type::codepoint_iterator_type             other_codepoint_iterator_type;
-
-        size_t codeunit_length = encoding_traits::estimate_codeunit_length(str.codepoint_length());
-        string_traits::mutable_strptr::reserve_space(_buffer, codeunit_length);
-
-        for(other_codepoint_iterator_type it = str.codepoint_begin();
-            it != str.codepoint_end(); ++it) 
-        {
-            codepoint_type codepoint = *it;
-            append(codepoint);
-        }
+        std::copy(str.begin(), str.end(), begin());
     }
 
   private:

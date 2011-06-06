@@ -58,7 +58,8 @@ INSTANTIATE_TEST_CASE_P(ascii_chars, utf8_encoding_test,
         u8_fixture('8', "8"),
         u8_fixture(0x7F, "\x7F")
     )
-); 
+);
+
 
 INSTANTIATE_TEST_CASE_P(double_byte, utf8_encoding_test,
     ::testing::Values(
@@ -94,13 +95,13 @@ INSTANTIATE_TEST_CASE_P(quad_byte, utf8_encoding_test,
 typedef std::string                                     StringT;
 typedef string_traits<StringT>                          StringTraits;
 typedef utf_encoding_traits< 
-    8, StringTraits, replace_policy<'?'> >              EncodingTraits;
+    1, StringTraits, replace_policy<'?'> >              EncodingTraits;
+typedef typename
+    StringTraits::raw_strptr_type                       raw_strptr_type;
 typedef typename
     StringTraits::mutable_strptr_type                   mutable_strptr_type;
 typedef typename
-    EncodingTraits::const_codepoint_iterator_type       const_codepoint_iterator;
-typedef typename
-    EncodingTraits::mutable_codepoint_iterator_type     mutable_codepoint_iterator;
+    EncodingTraits::codepoint_iterator_type             codepoint_iterator;
 
 
 
@@ -116,12 +117,8 @@ TEST_P(utf8_string_encoding_test, multi_codepoint) {
 
     mutable_strptr_type buffer(StringTraits::new_string());
 
-    {
-        mutable_codepoint_iterator buffer_ptr(&buffer);
-
-        for(auto it = codepoints.begin(); it != codepoints.end(); ++it) {
-            *buffer_ptr++ = *it;
-        }
+    for(auto it = codepoints.begin(); it != codepoints.end(); ++it) {
+        EncodingTraits::append_codepoint(buffer, *it);
     }
 
     StringT output = *buffer;
@@ -133,8 +130,8 @@ TEST_P(utf8_string_encoding_test, multi_codepoint) {
     std::vector<codepoint_type> expected = param.decoded;
     StringT encoded = param.encoded;
     typename std::vector<codepoint_type>::iterator expected_it = expected.begin();
-    const_codepoint_iterator it(encoded.begin(), encoded.end());
-    while(it != const_codepoint_iterator(encoded.end()))     
+    codepoint_iterator it(encoded.begin(), encoded.end());
+    while(it != codepoint_iterator(encoded.end()))     
     {
         ASSERT_NE(expected_it, expected.end());
         EXPECT_EQ(*it, *expected_it);

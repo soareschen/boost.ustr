@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <string>
 #include <iterator>
 #include "../incl.h"
 #include "utf8.h"
@@ -23,7 +24,7 @@ template <
     typename StringTraits, 
     typename Policy
 >
-class utf_encoding_traits<8, StringTraits, Policy> {
+class utf_encoding_traits<1, StringTraits, Policy> {
   public:
     typedef StringTraits                                string_traits;
     typedef typename 
@@ -38,12 +39,11 @@ class utf_encoding_traits<8, StringTraits, Policy> {
     typedef typename
         string_traits::mutable_strptr_type              mutable_strptr_type;
 
-    class const_codepoint_iterator;
-    class mutable_codepoint_iterator;
+    typedef char                                        raw_char_type;
 
-    typedef const_codepoint_iterator                    const_codepoint_iterator_type;
-    typedef mutable_codepoint_iterator                  mutable_codepoint_iterator_type;
+    class codepoint_iterator;
 
+    typedef codepoint_iterator                    codepoint_iterator_type;
     
     /*
      * Estimate the number of codeunits required to represent a given length of
@@ -63,15 +63,17 @@ class utf_encoding_traits<8, StringTraits, Policy> {
         generic::utf8::encode<Policy>(codepoint, std::back_inserter(*str));
     }
     
-    class const_codepoint_iterator {
+    class codepoint_iterator :
+        public std::iterator<std::forward_iterator_tag, codepoint_type>
+    {
       public:
-        const_codepoint_iterator(
+        codepoint_iterator(
                 codeunit_iterator_type codeunit_it,
                 codeunit_iterator_type end) :
             _current(codeunit_it), _next(codeunit_it), _end(end)
         { }
 
-        const_codepoint_iterator(codeunit_iterator_type end) :
+        codepoint_iterator(codeunit_iterator_type end) :
             _current(end), _next(end), _end(end)
         { }
 
@@ -95,7 +97,7 @@ class utf_encoding_traits<8, StringTraits, Policy> {
             }
         }
 
-        const_codepoint_iterator& operator ++() {
+        codepoint_iterator& operator ++() {
             if(_current != _end) {
                 if(_current == _next) {
                     // the iterator has *not* been dereferenced before
@@ -113,12 +115,12 @@ class utf_encoding_traits<8, StringTraits, Policy> {
             return *this;
         }
 
-        bool operator ==(const const_codepoint_iterator& other) {
+        bool operator ==(const codepoint_iterator& other) {
             return _current == other._current;
         }
 
-        bool operator !=(const const_codepoint_iterator& other) {
-            return _current != other._current;
+        bool operator !=(const codepoint_iterator& other) {
+            return !(_current == other._current);
         }
       private:
         codeunit_iterator_type          _current;
@@ -126,53 +128,6 @@ class utf_encoding_traits<8, StringTraits, Policy> {
         const codeunit_iterator_type    _end;
     };
 
-    class mutable_codepoint_iterator {
-      public:
-        mutable_codepoint_iterator(mutable_strptr_type* str) :
-            _str(str)
-        { }
-
-        mutable_codepoint_iterator& operator =(codepoint_type codepoint) {
-            append_codepoint(*_str, codepoint);
-            return *this;
-        }
-
-        mutable_codepoint_iterator& operator *() {
-            return *this;
-        }
-
-        mutable_codepoint_iterator& operator ++() {
-            return *this;
-        }
-
-        mutable_codepoint_iterator& operator ++(int) {
-            return *this;
-        }
-
-      private:
-        bool operator ==(const mutable_codepoint_iterator&) = delete;
-        mutable_codepoint_iterator(const mutable_codepoint_iterator&) = delete;
-        mutable_codepoint_iterator& operator =(const mutable_codepoint_iterator&) = delete;
-
-        /*
-         * The underlying type for mutable codepoint iterator is
-         * a raw pointer to the mutable smart pointer to the string object,
-         * which means it is a double pointer type that is roughly equivalend 
-         * to string_type**.
-         *
-         * This is because the currently pointed string object can be frozen
-         * and passed to the const adapter. When that happen, this mutable
-         * iterator is not suppose to modify the original string object or else
-         * the constness of the frozen string object will be violated.
-         *
-         * Supposingly the mutable iterator should be invalidated when the
-         * mutable adapter is frozen, but the behavior of invalidation is not
-         * nice, so the better way is to hold the pointer to the smart pointer,
-         * so that when the smart pointer become null, a new string is created
-         * and the content is appended to it.
-         */
-        mutable_strptr_type *_str;
-    };
 
 };
 
