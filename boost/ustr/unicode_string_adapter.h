@@ -6,7 +6,7 @@
 #include "incl.h"
 #include "policy.h"
 #include "string_traits.h"
-#include "encoding/utf8_encoding_traits.h"
+#include "encoding_traits.h"
 
 namespace boost {
 namespace ustr {
@@ -29,8 +29,8 @@ class unicode_string_adapter_builder;
 template <
     typename StringT,
     typename StringTraits = string_traits<StringT>,
-    typename EncodingTraits = utf_encoding_traits< 
-        StringTraits::codeunit_size, StringTraits, replace_policy<'?'> 
+    typename EncodingTraits = utf_encoding_traits<
+        StringTraits, replace_policy<'?'> 
     >
 >
 class unicode_string_adapter
@@ -60,11 +60,31 @@ class unicode_string_adapter
         std::back_insert_iterator<mutable_adapter_type>             codepoint_output_iterator_type;
 
     typedef typename
-        encoding_traits::raw_char_type                              raw_char_type;
+        string_traits::raw_char_type                                raw_char_type;
 
     typedef unicode_string_adapter<
         StringT, StringTraits, EncodingTraits>                      this_type;
+
+    static const size_t codeunit_size = string_traits::codeunit_size;
     
+    template <typename CodeunitIterator>
+    static this_type from_codeunits(CodeunitIterator begin, CodeunitIterator end) {
+        mutable_strptr_type buffer;
+        while(begin != end) {
+            string_traits::mutable_strptr::append(buffer, *begin++);
+        }
+
+        return this_type(string_traits::mutable_strptr::release(buffer));
+    }
+
+    template <typename CodepointIterator>
+    static this_type from_codepoints(CodepointIterator begin, CodepointIterator end) {
+        mutable_adapter_type buffer;
+        std::copy(begin, end, buffer.begin());
+
+        return buffer.freeze();
+    }
+
     /*
      * Implicit lightweight copy construction from other const adapter.
      * The two const adapter will share the same underlying buffer since 
@@ -167,6 +187,7 @@ class unicode_string_adapter
         validate();
     }
 
+
     /*
      * Implicit move construction from existing mutable adapter.
      */
@@ -211,8 +232,7 @@ class unicode_string_adapter
      * on the fly.
      */
     string_type to_string() const {
-        return string_traits::make_string(
-                string_traits::const_strptr::get(_buffer));
+        return *string_traits::const_strptr::get(_buffer);
     }
 
     /*
@@ -225,12 +245,17 @@ class unicode_string_adapter
     bool operator ==(const unicode_string_adapter<
             StringT_, StringTraits_, EncodingTraits_>& other) const 
     {
+        typedef unicode_string_adapter<
+            StringT_, StringTraits_, EncodingTraits_>       other_type;
+        typedef typename
+            other_type::codepoint_iterator_type             other_codepoint_iterator_type;
+
         if(other.codepoint_length() != codepoint_length()) {
             return false;
         }
 
         codepoint_iterator_type it = codepoint_begin();
-        codepoint_iterator_type other_it = other.codepoint_begin();
+        other_codepoint_iterator_type other_it = other.codepoint_begin();
 
         while(it != codepoint_end()) {
             if(*it != *other_it) {
@@ -271,7 +296,7 @@ template <
     typename StringT,
     typename StringTraits = string_traits<StringT>,
     typename EncodingTraits = utf_encoding_traits< 
-        StringTraits::codeunit_size, StringTraits, replace_policy<'?'> 
+        StringTraits, replace_policy<'?'> 
     >
 >
 class unicode_string_adapter_builder

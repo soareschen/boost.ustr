@@ -6,19 +6,25 @@
 
 using boost::ustr::string_traits;
 
-typedef string_traits< std::vector<char> >      StringTraits;
-typedef typename
-    StringTraits::string_type           string_type;
-typedef typename
-    StringTraits::codeunit_type         codeunit_type;
-typedef typename
-    StringTraits::raw_strptr_type       raw_strptr_type;
-typedef typename
-    StringTraits::const_strptr_type     const_strptr_type;
-typedef typename
-    StringTraits::mutable_strptr_type   mutable_strptr_type;
+template <typename T>
+class string_traits_test : public ::testing::Test { };
 
-TEST(string_traits_test, raw_pointer) {
+TYPED_TEST_CASE_P(string_traits_test);
+
+TYPED_TEST_P(string_traits_test, raw_pointer) {
+    typedef TypeParam                       StringT;
+    typedef string_traits<StringT>          StringTraits;
+    typedef typename
+        StringTraits::string_type           string_type;
+    typedef typename
+        StringTraits::codeunit_type         codeunit_type;
+    typedef typename
+        StringTraits::raw_strptr_type       raw_strptr_type;
+    typedef typename
+        StringTraits::const_strptr_type     const_strptr_type;
+    typedef typename
+        StringTraits::mutable_strptr_type   mutable_strptr_type;
+
     string_type example = { 't', 'e', 's', 't' };
     raw_strptr_type str1 = StringTraits::new_string(example);
     string_type str2 = *str1;
@@ -28,7 +34,20 @@ TEST(string_traits_test, raw_pointer) {
     StringTraits::raw_strptr::delete_string(str1);
 }
 
-TEST(string_traits_test, const_pointer) {
+TYPED_TEST_P(string_traits_test, const_pointer) {
+    typedef TypeParam                       StringT;
+    typedef string_traits<StringT>          StringTraits;
+    typedef typename
+        StringTraits::string_type           string_type;
+    typedef typename
+        StringTraits::codeunit_type         codeunit_type;
+    typedef typename
+        StringTraits::raw_strptr_type       raw_strptr_type;
+    typedef typename
+        StringTraits::const_strptr_type     const_strptr_type;
+    typedef typename
+        StringTraits::mutable_strptr_type   mutable_strptr_type;
+
     string_type str1 = { 't', 'e', 's', 't' };
     const_strptr_type str2(StringTraits::new_string(str1));
     const_strptr_type str3(str2);
@@ -46,7 +65,20 @@ TEST(string_traits_test, const_pointer) {
     EXPECT_TRUE(StringTraits::const_strptr::equals(str2, str4));
 }
 
-TEST(string_traits_test, null_raw_strptr) {
+TYPED_TEST_P(string_traits_test, null_raw_strptr) {
+    typedef TypeParam                       StringT;
+    typedef string_traits<StringT>          StringTraits;
+    typedef typename
+        StringTraits::string_type           string_type;
+    typedef typename
+        StringTraits::codeunit_type         codeunit_type;
+    typedef typename
+        StringTraits::raw_strptr_type       raw_strptr_type;
+    typedef typename
+        StringTraits::const_strptr_type     const_strptr_type;
+    typedef typename
+        StringTraits::mutable_strptr_type   mutable_strptr_type;
+
     string_type str1 = { }; // empty string
 
     raw_strptr_type str2 = StringTraits::new_string(str1);
@@ -60,7 +92,20 @@ TEST(string_traits_test, null_raw_strptr) {
     StringTraits::raw_strptr::delete_string(str2);
 }
 
-TEST(string_traits_test, null_const_strptr) {
+TYPED_TEST_P(string_traits_test, null_const_strptr) {
+    typedef TypeParam                       StringT;
+    typedef string_traits<StringT>          StringTraits;
+    typedef typename
+        StringTraits::string_type           string_type;
+    typedef typename
+        StringTraits::codeunit_type         codeunit_type;
+    typedef typename
+        StringTraits::raw_strptr_type       raw_strptr_type;
+    typedef typename
+        StringTraits::const_strptr_type     const_strptr_type;
+    typedef typename
+        StringTraits::mutable_strptr_type   mutable_strptr_type;
+
     string_type str1 = { }; // empty string
 
     const_strptr_type str2(StringTraits::new_string(str1));
@@ -73,7 +118,20 @@ TEST(string_traits_test, null_const_strptr) {
 
 }
 
-TEST(string_traits_test, mutable_strptr) {
+TYPED_TEST_P(string_traits_test, mutable_strptr) {
+    typedef TypeParam                       StringT;
+    typedef string_traits<StringT>          StringTraits;
+    typedef typename
+        StringTraits::string_type           string_type;
+    typedef typename
+        StringTraits::codeunit_type         codeunit_type;
+    typedef typename
+        StringTraits::raw_strptr_type       raw_strptr_type;
+    typedef typename
+        StringTraits::const_strptr_type     const_strptr_type;
+    typedef typename
+        StringTraits::mutable_strptr_type   mutable_strptr_type;
+
     string_type str1 = { 't', 'e', 's', 't' };
     mutable_strptr_type str2;
 
@@ -99,3 +157,16 @@ TEST(string_traits_test, mutable_strptr) {
 
     StringTraits::raw_strptr::delete_string(str3);
 }
+
+
+REGISTER_TYPED_TEST_CASE_P(string_traits_test, 
+        raw_pointer, const_pointer, null_raw_strptr, 
+        null_const_strptr, mutable_strptr);
+
+typedef ::testing::Types< 
+        std::string, std::vector<char>, std::list<char>,
+        std::u16string, std::vector<char16_t>, std::list<char16_t>
+    > string_traits_test_types;
+
+INSTANTIATE_TYPED_TEST_CASE_P(stl_containers, string_traits_test, string_traits_test_types);
+

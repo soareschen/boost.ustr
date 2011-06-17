@@ -1,10 +1,10 @@
 
-exe test 
+exe unit_test 
   : 
-    test.cpp 
+    unit_test.cpp 
     unicode_string_adapter_test.cpp 
     string_traits_test.cpp
-    encoding/utf8_encoding_traits_test.cpp
+    encoding_traits_test.cpp
     /gtest//gtest 
   : 
     <threading>multi 

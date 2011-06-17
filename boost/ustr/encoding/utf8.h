@@ -5,7 +5,7 @@
 
 namespace boost {
 namespace ustr {
-namespace generic {
+namespace encoding {
 namespace utf8 {
 
 using namespace boost::ustr;
@@ -82,110 +82,116 @@ inline unsigned char build_third_last_byte(const codepoint_type& codepoint) {
 }
 
 template <typename Policy>
-inline codepoint_type check_and_return(const codepoint_type& codepoint) {
+inline codepoint_type check_and_return(const codepoint_type& codepoint, Policy policy = Policy()) {
     if(is_valid_codepoint(codepoint)) {
         return codepoint;
     } else {
-        return Policy::replace_invalid_codepoint(codepoint);
+        return policy.replace_invalid_codepoint(codepoint);
     }
-}
-
-template <typename Policy = error_policy, typename OutputIterator>
-inline void encode(const codepoint_type& codepoint, OutputIterator out) {
-    if(has_single_codeunit(codepoint)) {
-        *out++ = codepoint;
-    } else if(has_double_codeunit(codepoint)) {
-        *out++ = DOUBLE_BYTE_PREFIX | ((codepoint >> 6) & BIT_ONE_TO_SIX);
-        *out++ = build_last_byte(codepoint);
-    } else if(has_triple_codeunit(codepoint)) {
-        *out++ = TRIPLE_BYTE_PREFIX | ((codepoint >> 12) & BIT_ONE_TO_SIX);
-        *out++ = build_second_last_byte(codepoint);
-        *out++ = build_last_byte(codepoint);
-    } else if(has_quad_codeunit(codepoint)) {
-        *out++ = QUAD_BYTE_PREFIX | ((codepoint >> 18) & BIT_ONE_TO_THREE);
-        *out++ = build_third_last_byte(codepoint);
-        *out++ = build_second_last_byte(codepoint);
-        *out++ = build_last_byte(codepoint);
-    } else {
-        codepoint_type replacement_codepoint = Policy::replace_invalid_codepoint(codepoint);
-        assert(replacement_codepoint != codepoint);
-        encode(replacement_codepoint, out);
-    }
-}
-
-template <typename Policy = error_policy, typename CodeunitInputIterator>
-inline codepoint_type decode(CodeunitInputIterator& begin, const CodeunitInputIterator& end) {
-    unsigned char first_byte = *begin++;
-    
-    if(!is_valid_first_byte(first_byte)) {
-        return Policy::replace_invalid_codepoint();
-    }
-
-    if(is_single_codeunit(first_byte)) {
-        return first_byte;
-    } 
-
-    // 2nd byte
-    if(begin == end) {
-        return Policy::replace_invalid_codepoint();
-    }
-
-    unsigned char second_byte = *begin++;
-    if(!is_continuation_byte(second_byte)) {
-        return Policy::replace_invalid_codepoint();
-    }
-
-    if(is_double_codeunit(first_byte)) {
-        return check_and_return<Policy>(
-            ((first_byte & BIT_ONE_TO_FIVE) << 6) | 
-            (second_byte & BIT_ONE_TO_SIX)
-        );
-    }
-
-    // 3rd byte
-    if(begin == end) {
-        return Policy::replace_invalid_codepoint();
-    }
-
-    unsigned char third_byte = *begin++;
-
-    if(!is_continuation_byte(third_byte)) {
-        return Policy::replace_invalid_codepoint();
-    }
-        
-    if(is_triple_codeunit(first_byte)) {
-        return check_and_return<Policy>(
-            ((first_byte & BIT_ONE_TO_FOUR) << 12) | 
-            ((second_byte & BIT_ONE_TO_SIX) << 6) |
-            (third_byte & BIT_ONE_TO_SIX)
-        );
-    }
-
-    // 4th byte
-    if(begin == end) {
-        return Policy::replace_invalid_codepoint();
-    }
-
-    unsigned char fourth_byte = *begin++;
-
-    if(!is_continuation_byte(fourth_byte)) {
-        return Policy::replace_invalid_codepoint();
-    }
-
-    if(is_quad_codeunit(first_byte)) {
-        return check_and_return<Policy>(
-            ((first_byte & BIT_ONE_TO_THREE) << 18) |
-            ((second_byte & BIT_ONE_TO_SIX) << 12) |
-            ((third_byte & BIT_ONE_TO_SIX) << 6) |
-            (fourth_byte & BIT_ONE_TO_SIX)
-        );
-    }
-
-    // should not reach here
-    return Policy::replace_invalid_codepoint();
 }
 
 } // namespace utf8
-} // namespace generic
+
+using namespace boost::ustr::encoding::utf8;
+
+struct utf8_encoder {
+    template <typename Policy = error_policy, typename OutputIterator>
+    static inline void encode(const codepoint_type& codepoint, OutputIterator out, Policy policy = Policy()) {
+        if(has_single_codeunit(codepoint)) {
+            *out++ = codepoint;
+        } else if(has_double_codeunit(codepoint)) {
+            *out++ = DOUBLE_BYTE_PREFIX | ((codepoint >> 6) & BIT_ONE_TO_SIX);
+            *out++ = build_last_byte(codepoint);
+        } else if(has_triple_codeunit(codepoint)) {
+            *out++ = TRIPLE_BYTE_PREFIX | ((codepoint >> 12) & BIT_ONE_TO_SIX);
+            *out++ = build_second_last_byte(codepoint);
+            *out++ = build_last_byte(codepoint);
+        } else if(has_quad_codeunit(codepoint)) {
+            *out++ = QUAD_BYTE_PREFIX | ((codepoint >> 18) & BIT_ONE_TO_THREE);
+            *out++ = build_third_last_byte(codepoint);
+            *out++ = build_second_last_byte(codepoint);
+            *out++ = build_last_byte(codepoint);
+        } else {
+            codepoint_type replacement_codepoint = policy.replace_invalid_codepoint(codepoint);
+            assert(replacement_codepoint != codepoint);
+            encode(replacement_codepoint, out);
+        }
+    }
+
+    template <typename Policy = error_policy, typename CodeunitInputIterator>
+    static inline codepoint_type decode(CodeunitInputIterator& begin, const CodeunitInputIterator& end, Policy policy = Policy()) {
+        unsigned char first_byte = *begin++;
+        
+        if(!is_valid_first_byte(first_byte)) {
+            return policy.replace_invalid_codepoint();
+        }
+
+        if(is_single_codeunit(first_byte)) {
+            return first_byte;
+        } 
+
+        // 2nd byte
+        if(begin == end) {
+            return policy.replace_invalid_codepoint();
+        }
+
+        unsigned char second_byte = *begin++;
+        if(!is_continuation_byte(second_byte)) {
+            return policy.replace_invalid_codepoint();
+        }
+
+        if(is_double_codeunit(first_byte)) {
+            return check_and_return<Policy>(
+                ((first_byte & BIT_ONE_TO_FIVE) << 6) | 
+                (second_byte & BIT_ONE_TO_SIX)
+            );
+        }
+
+        // 3rd byte
+        if(begin == end) {
+            return policy.replace_invalid_codepoint();
+        }
+
+        unsigned char third_byte = *begin++;
+
+        if(!is_continuation_byte(third_byte)) {
+            return policy.replace_invalid_codepoint();
+        }
+            
+        if(is_triple_codeunit(first_byte)) {
+            return check_and_return<Policy>(
+                ((first_byte & BIT_ONE_TO_FOUR) << 12) | 
+                ((second_byte & BIT_ONE_TO_SIX) << 6) |
+                (third_byte & BIT_ONE_TO_SIX)
+            );
+        }
+
+        // 4th byte
+        if(begin == end) {
+            return policy.replace_invalid_codepoint();
+        }
+
+        unsigned char fourth_byte = *begin++;
+
+        if(!is_continuation_byte(fourth_byte)) {
+            return policy.replace_invalid_codepoint();
+        }
+
+        if(is_quad_codeunit(first_byte)) {
+            return check_and_return<Policy>(
+                ((first_byte & BIT_ONE_TO_THREE) << 18) |
+                ((second_byte & BIT_ONE_TO_SIX) << 12) |
+                ((third_byte & BIT_ONE_TO_SIX) << 6) |
+                (fourth_byte & BIT_ONE_TO_SIX)
+            );
+        }
+
+        // should not reach here
+        return policy.replace_invalid_codepoint();
+    }
+
+};
+
+} // namespace encoding
 } // namespace ustr
 } // namespace boost

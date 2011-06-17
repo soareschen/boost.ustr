@@ -1,9 +1,11 @@
 
 #include <string>
 #include <vector>
+#include <list>
+#include <algorithm>
 #include "unicode_string_adapter.h"
 #include "string_traits.h"
-#include "encoding/utf8_encoding_traits.h"
+#include "encoding_traits.h"
 #include "test/fixture.h"
 #include "gtest.h"
 
@@ -13,82 +15,147 @@ namespace test {
 
 using namespace boost::ustr;
 
-typedef std::string                                     StringT;
-typedef std::vector<char>                               StringT2;
+template <typename T>
+class string_adapter_single_test : public ::testing::Test {};
 
-typedef string_traits<StringT>                          StringTraits;
-typedef utf_encoding_traits<
-    1, StringTraits, replace_policy<'?'> >              EncodingTraits;
+template <typename T>
+class string_adapter_double_test : public ::testing::Test {};
 
-typedef unicode_string_adapter<
-    StringT, StringTraits, EncodingTraits>              U8String;
-typedef unicode_string_adapter_builder<
-    StringT, StringTraits, EncodingTraits>              U8StringBuilder;
+TYPED_TEST_CASE_P(string_adapter_single_test);
+TYPED_TEST_CASE_P(string_adapter_double_test);
 
-typedef unicode_string_adapter<
-    StringT2, StringTraits, EncodingTraits>             U8String2;
-typedef unicode_string_adapter_builder<
-    StringT2, StringTraits, EncodingTraits>             U8StringBuilder2;
+TYPED_TEST_P(string_adapter_single_test, encoding) {
 
+    typedef TypeParam                                   UString;
+    typedef typename
+        UString::mutable_adapter_type                   UStringBuilder;
 
-typedef typename 
-    U8String::codepoint_iterator_type                   codepoint_iterator;
+    const size_t codeunit_size = UString::codeunit_size;
 
-class utf8_string_adapter_test : public ::testing::TestWithParam<u8_string_fixture> {};
+    typedef fixture_encoding<codeunit_size>             fixture_encoder;
+    typedef typename
+        fixture_encoder::encoded_type                   encoded_type;
 
-TEST_P(utf8_string_adapter_test, encoding) {
+    std::vector<utf_string_fixture> fixtures = get_utf_fixtures();
 
-    u8_string_fixture fixture = GetParam();
-    std::vector<codepoint_type> decoded = fixture.decoded;
-    std::string encoded = fixture.encoded;
+    for(auto fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
+        utf_string_fixture param = *fixture;
+        encoded_type encoded = fixture_encoder::get_encoded(param);
 
-    U8String ustr(encoded.c_str());
+        UString ustr1 = UString::from_codeunits(encoded.begin(), encoded.end());
+        EXPECT_TRUE(std::equal(param.decoded.begin(), param.decoded.end(), ustr1.begin()));
 
-    auto it = decoded.begin();
-    codepoint_iterator u_it = ustr.begin();
+        UString ustr2 = UString::from_codepoints(param.decoded.begin(), param.decoded.end());
+        EXPECT_TRUE(std::equal(param.decoded.begin(), param.decoded.end(), ustr2.begin()));
 
-    while(u_it != ustr.end()) {
-        ASSERT_NE(it, decoded.end());
-        EXPECT_EQ(*u_it, codepoint_type(*it));
-        ++it;
-        ++u_it;
+        EXPECT_EQ(ustr2, ustr1);
     }
-
-    U8StringBuilder mustr;
-
-    std::copy(decoded.begin(), decoded.end(), mustr.begin());
-    /* for(auto mit = decoded.begin(); mit != decoded.end(); ++mit) {
-        mustr.append(*mit);
-    } */
-
-    U8String freezed = mustr.freeze();
-
-    EXPECT_EQ(freezed, ustr);
-
 }
 
-TEST_P(utf8_string_adapter_test, conversion) {
 
-    u8_string_fixture fixture = GetParam();
-    std::vector<codepoint_type> decoded = fixture.decoded;
-    std::string encoded = fixture.encoded;
+TYPED_TEST_P(string_adapter_double_test, conversion) {
+    typedef typename
+        TypeParam::UString1                            UString;
+    typedef typename
+        TypeParam::UString2                            UString2;
+    typedef typename
+        UString::mutable_adapter_type                  UStringBuilder;
+    typedef typename
+        UString2::mutable_adapter_type                 UStringBuilder2;
 
-    U8String    ustr1_1(encoded.c_str());
-    U8String2   ustr2_1(encoded.c_str());
+    typedef typename
+        UString::string_type                            StringT;
+    typedef typename
+        UString2::string_type                           StringT2;
 
-    U8String    ustr1_2(ustr2_1);
-    U8String2   ustr2_2(ustr1_2);
+    typedef fixture_encoding<UString::codeunit_size>    fixture_encoder;
+    typedef typename
+        fixture_encoder::encoded_type                   encoded_type;
 
-    EXPECT_EQ(ustr1_1, ustr1_2);
-    EXPECT_EQ(ustr2_1, ustr2_2);
+    typedef fixture_encoding<UString2::codeunit_size>   fixture_encoder2;
+    typedef typename
+        fixture_encoder2::encoded_type                  encoded_type2;
 
-    EXPECT_EQ(ustr1_1, ustr2_1);
-    EXPECT_EQ(ustr2_1, ustr1_1);
-    EXPECT_EQ(ustr1_1, ustr2_2);
-    EXPECT_EQ(ustr2_1, ustr1_2);
+    std::vector<utf_string_fixture> fixtures = get_utf_fixtures();
+
+    for(auto fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
+        utf_string_fixture param = *fixture;
+        encoded_type encoded = fixture_encoder::get_encoded(param);
+        encoded_type2 encoded2 = fixture_encoder2::get_encoded(param);
+
+        UString    ustr1_1 = UString::from_codeunits(encoded.begin(), encoded.end());
+        UString2   ustr2_1 = UString2::from_codeunits(encoded2.begin(), encoded2.end());
+
+        auto uit = ustr2_1.begin();
+        for(auto it = param.decoded.begin(); it != param.decoded.end(); ++it) {
+            EXPECT_EQ(*uit, *it);
+            ++uit;
+        }
+
+        EXPECT_TRUE(std::equal(param.decoded.begin(), param.decoded.end(), ustr1_1.begin()));
+        EXPECT_TRUE(std::equal(param.decoded.begin(), param.decoded.end(), ustr2_1.begin()));
+
+        UString    ustr1_2(ustr2_1);
+        UString2   ustr2_2(ustr1_1);
+
+        EXPECT_EQ(ustr1_1, ustr1_2);
+        EXPECT_EQ(ustr2_1, ustr2_2);
+
+        EXPECT_EQ(ustr1_1, ustr2_1);
+        EXPECT_EQ(ustr2_1, ustr1_1);
+        EXPECT_EQ(ustr1_1, ustr2_2);
+        EXPECT_EQ(ustr2_1, ustr1_2);
+    }
 }
 
-INSTANTIATE_TEST_CASE_P(fixture_test, utf8_string_adapter_test, ::testing::ValuesIn(get_fixtures()));
+class ustr_test_type_param1 {
+  public:
+    typedef unicode_string_adapter< std::string >           UString1;
+    typedef unicode_string_adapter< std::vector<char> >     UString2;
+};
+
+class ustr_test_type_param2 {
+  public:
+    typedef unicode_string_adapter< std::string >           UString1;
+    typedef unicode_string_adapter< std::vector<char16_t> > UString2;
+};
+
+class ustr_test_type_param3 {
+  public:
+    typedef unicode_string_adapter< std::u16string >        UString1;
+    typedef unicode_string_adapter< std::vector<char> >     UString2;
+};
+
+class ustr_test_type_param4 {
+  public:
+    typedef unicode_string_adapter< std::list<char> >        UString1;
+    typedef unicode_string_adapter< std::list<char16_t> >    UString2;
+};
+
+REGISTER_TYPED_TEST_CASE_P(string_adapter_single_test, encoding);
+REGISTER_TYPED_TEST_CASE_P(string_adapter_double_test, conversion);
+
+typedef ::testing::Types<
+        unicode_string_adapter< std::string >,
+        unicode_string_adapter< std::u16string >,
+        unicode_string_adapter< std::vector<char> >,
+        unicode_string_adapter< std::vector<char16_t> >,
+        unicode_string_adapter< std::list<char> >,
+        unicode_string_adapter< std::list<char16_t> >
+    > single_test_type_params;
+
+INSTANTIATE_TYPED_TEST_CASE_P(basic, string_adapter_single_test, single_test_type_params);
+
+typedef ::testing::Types<
+        ustr_test_type_param1,
+        ustr_test_type_param2,
+        ustr_test_type_param3,
+        ustr_test_type_param4
+    > double_test_type_params;
+
+INSTANTIATE_TYPED_TEST_CASE_P(basic, string_adapter_double_test, double_test_type_params);
+
+
 
 
 } // namespace test

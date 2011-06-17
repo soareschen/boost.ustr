@@ -3,30 +3,43 @@
 
 #include <string>
 #include <iterator>
-#include "../incl.h"
-#include "utf8.h"
-#include "../policy.h"
+#include "incl.h"
+#include "policy.h"
+#include "encoding/utf8.h"
+#include "encoding/utf16.h"
 
 namespace boost { 
 namespace ustr {
 
 
-using namespace boost::ustr::generic;
+using namespace boost::ustr::encoding;
 
-template <size_t codeunit_size, typename StringTraits, typename Policy >
-class utf_encoding_traits;
+template <size_t codeunit_size>
+class encoding_engine { 
+
+};
+
+template <>
+class encoding_engine<1> {
+  public:
+    typedef utf8_encoder    type;
+};
+
+template <>
+class encoding_engine<2> {
+  public:
+    typedef utf16_encoder   type;
+};
 
 
 /*
  * UTF-8 Encoding Traits
  */
-template < 
-    typename StringTraits, 
-    typename Policy
->
-class utf_encoding_traits<1, StringTraits, Policy> {
+template < typename StringTraits, typename Policy = replace_policy<'?'> >
+class utf_encoding_traits {
   public:
     typedef StringTraits                                string_traits;
+
     typedef typename 
         string_traits::codeunit_type                    codeunit_type;
     typedef typename 
@@ -39,11 +52,12 @@ class utf_encoding_traits<1, StringTraits, Policy> {
     typedef typename
         string_traits::mutable_strptr_type              mutable_strptr_type;
 
-    typedef char                                        raw_char_type;
+    typedef typename encoding_engine<
+        string_traits::codeunit_size >::type            encoder;
 
     class codepoint_iterator;
 
-    typedef codepoint_iterator                    codepoint_iterator_type;
+    typedef codepoint_iterator                          codepoint_iterator_type;
     
     /*
      * Estimate the number of codeunits required to represent a given length of
@@ -55,12 +69,12 @@ class utf_encoding_traits<1, StringTraits, Policy> {
      * can potentially save some memory reallocation effort.
      */
     static size_t estimate_codeunit_length(size_t codepoint_length) {
-        return codepoint_length * 4;
+        return codepoint_length;
     }
 
     static void append_codepoint(mutable_strptr_type& str, const codepoint_type& codepoint) {
         string_traits::mutable_strptr::check_and_initialize(str);
-        generic::utf8::encode<Policy>(codepoint, std::back_inserter(*str));
+        encoder::encode(codepoint, std::back_inserter(*str), Policy());
     }
     
     class codepoint_iterator :
@@ -86,14 +100,14 @@ class utf_encoding_traits<1, StringTraits, Policy> {
         codepoint_type operator *() {
             if(_current == _next) {
                 // the iterator has just been incremented
-                return utf8::decode<Policy>(_next, _end);
+                return encoder::decode(_next, _end, Policy());
             } else {
                 // the iterator has been dereferenced before
                 // since the last increment. This shouldn't
                 // happen often as most code only dereference the
                 // iterator once for each increment.
                 codeunit_iterator_type clone(_current);
-                return utf8::decode<Policy>(clone, _end);
+                return encoder::decode(clone, _end, Policy());
             }
         }
 
@@ -107,7 +121,7 @@ class utf_encoding_traits<1, StringTraits, Policy> {
                     // Even without dereference, the decoding still
                     // needs to be performed as we can't otherwise
                     // know which position is the next codepoint.
-                    utf8::decode<Policy>(_next, _end);
+                    encoder::decode(_next, _end, Policy());
                 }
                 
                 _current = _next;

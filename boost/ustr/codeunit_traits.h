@@ -12,8 +12,36 @@ class char_holder;
 
 template <typename CharT, typename CharIterator>
 class codeunit_iterator;
-  
 
+template <size_t CharSize>
+class char_type_by_size {};
+
+template <>
+class char_type_by_size<1> {
+  public:
+    typedef char                                type;
+};
+
+template <>
+class char_type_by_size<2> {
+  public:
+    typedef char16_t                            type;
+};
+
+template <>
+class char_type_by_size<4> {
+  public:
+    typedef char32_t                            type;
+};
+
+template <typename CharT>
+class get_raw_char_type {
+  public:
+    typedef typename
+        char_type_by_size< sizeof(CharT) >::type       type;
+};
+
+/* 
 template <typename CharT, typename CharIterator>
 class codeunit_iterator : 
     public std::iterator<std::forward_iterator_tag, 
@@ -182,6 +210,8 @@ class char_holder<32, CharT> {
   private:
     CharT _char;
 };
+*/
+
 
 } // namespace ustr 
 } // namespace boost
