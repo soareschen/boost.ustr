@@ -14,21 +14,21 @@ namespace ustr {
 
 using namespace boost::ustr::encoding;
 
-template <size_t codeunit_size>
+template <size_t codeunit_size, typename Policy>
 class encoding_engine { 
 
 };
 
-template <>
-class encoding_engine<1> {
+template <typename Policy>
+class encoding_engine<1, Policy> {
   public:
-    typedef utf8_encoder    type;
+    typedef utf8_encoder<Policy>    type;
 };
 
-template <>
-class encoding_engine<2> {
+template <typename Policy>
+class encoding_engine<2, Policy> {
   public:
-    typedef utf16_encoder   type;
+    typedef utf16_encoder<Policy>   type;
 };
 
 
@@ -53,7 +53,7 @@ class utf_encoding_traits {
         string_traits::mutable_strptr_type              mutable_strptr_type;
 
     typedef typename encoding_engine<
-        string_traits::codeunit_size >::type            encoder;
+        string_traits::codeunit_size, Policy >::type    encoder;
 
     class codepoint_iterator;
 
@@ -74,7 +74,7 @@ class utf_encoding_traits {
 
     static void append_codepoint(mutable_strptr_type& str, const codepoint_type& codepoint) {
         string_traits::mutable_strptr::check_and_initialize(str);
-        encoder::encode(codepoint, std::back_inserter(*str), Policy());
+        encoder::encode(codepoint, std::back_inserter(*str));
     }
     
     class codepoint_iterator :
@@ -100,14 +100,14 @@ class utf_encoding_traits {
         codepoint_type operator *() {
             if(_current == _next) {
                 // the iterator has just been incremented
-                return encoder::decode(_next, _end, Policy());
+                return encoder::decode(_next, _end);
             } else {
                 // the iterator has been dereferenced before
                 // since the last increment. This shouldn't
                 // happen often as most code only dereference the
                 // iterator once for each increment.
                 codeunit_iterator_type clone(_current);
-                return encoder::decode(clone, _end, Policy());
+                return encoder::decode(clone, _end);
             }
         }
 
@@ -121,7 +121,7 @@ class utf_encoding_traits {
                     // Even without dereference, the decoding still
                     // needs to be performed as we can't otherwise
                     // know which position is the next codepoint.
-                    encoder::decode(_next, _end, Policy());
+                    encoder::decode(_next, _end);
                 }
                 
                 _current = _next;

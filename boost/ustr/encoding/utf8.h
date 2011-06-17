@@ -94,8 +94,10 @@ inline codepoint_type check_and_return(const codepoint_type& codepoint, Policy p
 
 using namespace boost::ustr::encoding::utf8;
 
-struct utf8_encoder {
-    template <typename Policy = error_policy, typename OutputIterator>
+template <typename Policy = error_policy>
+class utf8_encoder {
+  public:
+    template <typename OutputIterator>
     static inline void encode(const codepoint_type& codepoint, OutputIterator out, Policy policy = Policy()) {
         if(has_single_codeunit(codepoint)) {
             *out++ = codepoint;
@@ -118,7 +120,7 @@ struct utf8_encoder {
         }
     }
 
-    template <typename Policy = error_policy, typename CodeunitInputIterator>
+    template <typename CodeunitInputIterator>
     static inline codepoint_type decode(CodeunitInputIterator& begin, const CodeunitInputIterator& end, Policy policy = Policy()) {
         unsigned char first_byte = *begin++;
         

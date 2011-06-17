@@ -63,9 +63,10 @@ inline bool is_low_surrogate(const utf16_codeunit_type& codeunit) {
 
 using namespace boost::ustr::encoding::utf16;
 
-struct utf16_encoder {
-
-    template <typename Policy = error_policy, typename OutputIterator>
+template <typename Policy = error_policy>
+class utf16_encoder {
+  public:
+    template <typename OutputIterator>
     static inline void encode(const codepoint_type& codepoint, OutputIterator out, Policy policy = Policy()) {
         if(is_single_codeunit(codepoint)) {
             *out++ = codepoint & 0xFFFF;
@@ -82,7 +83,7 @@ struct utf16_encoder {
         }
     }
 
-    template <typename Policy = error_policy, typename CodeunitInputIterator>
+    template <typename CodeunitInputIterator>
     static inline codepoint_type decode(CodeunitInputIterator& begin, const CodeunitInputIterator& end, Policy policy = Policy()) {
         utf16_codeunit_type hi = *begin++;
         if(is_high_surrogate(hi)) {
