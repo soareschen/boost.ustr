@@ -21,6 +21,10 @@ class u8_fixture {
     u8_fixture(const codepoint_type& decoded_, const string& encoded_) :
         decoded(decoded_), encoded(encoded_)
     { }
+    
+    u8_fixture operator =(const u8_fixture& other) {
+        return *this;
+    }
 
     const codepoint_type decoded;
     const string encoded;
@@ -35,7 +39,7 @@ TEST_P(utf8_encoding_test, single_codepoint) {
     utf8_encoder<error_policy>::encode(param.decoded, std::back_inserter(encoded));
     EXPECT_EQ(encoded, param.encoded);
 
-    typename std::string::const_iterator begin = param.encoded.begin();
+    auto begin = param.encoded.begin();
 
     codepoint_type decoded = utf8_encoder<error_policy>::decode(begin, param.encoded.end());
     EXPECT_EQ(begin, param.encoded.end());

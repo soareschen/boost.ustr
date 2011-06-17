@@ -1,6 +1,7 @@
 bin/
 out
 *.swp
+boost-build.jam
 
 # Compiled source #
 ###################

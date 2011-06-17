@@ -25,7 +25,9 @@ TYPED_TEST_P(string_traits_test, raw_pointer) {
     typedef typename
         StringTraits::mutable_strptr_type   mutable_strptr_type;
 
-    string_type example = { 't', 'e', 's', 't' };
+	codeunit_type example_[] = { 't', 'e', 's', 't' };
+    string_type example(example_, example_ + sizeof(example_)/sizeof(codeunit_type));
+	
     raw_strptr_type str1 = StringTraits::new_string(example);
     string_type str2 = *str1;
     EXPECT_TRUE(StringTraits::raw_strptr::equals(str1, example));
@@ -48,7 +50,9 @@ TYPED_TEST_P(string_traits_test, const_pointer) {
     typedef typename
         StringTraits::mutable_strptr_type   mutable_strptr_type;
 
-    string_type str1 = { 't', 'e', 's', 't' };
+	codeunit_type str1_[] = { 't', 'e', 's', 't' };
+    string_type str1(str1_, str1_ + sizeof(str1_)/sizeof(codeunit_type));
+	
     const_strptr_type str2(StringTraits::new_string(str1));
     const_strptr_type str3(str2);
 
@@ -79,7 +83,7 @@ TYPED_TEST_P(string_traits_test, null_raw_strptr) {
     typedef typename
         StringTraits::mutable_strptr_type   mutable_strptr_type;
 
-    string_type str1 = { }; // empty string
+    string_type str1; // empty string
 
     raw_strptr_type str2 = StringTraits::new_string(str1);
     raw_strptr_type str3 = NULL;
@@ -106,7 +110,7 @@ TYPED_TEST_P(string_traits_test, null_const_strptr) {
     typedef typename
         StringTraits::mutable_strptr_type   mutable_strptr_type;
 
-    string_type str1 = { }; // empty string
+    string_type str1; // empty string
 
     const_strptr_type str2(StringTraits::new_string(str1));
     const_strptr_type str3((string_type*) NULL);
@@ -132,7 +136,9 @@ TYPED_TEST_P(string_traits_test, mutable_strptr) {
     typedef typename
         StringTraits::mutable_strptr_type   mutable_strptr_type;
 
-    string_type str1 = { 't', 'e', 's', 't' };
+	codeunit_type str1_[] = { 't', 'e', 's', 't' };
+    string_type str1(str1_, str1_ + sizeof(str1_)/sizeof(codeunit_type));
+	
     mutable_strptr_type str2;
 
     EXPECT_EQ(str2.get(), (raw_strptr_type) NULL);
@@ -143,7 +149,9 @@ TYPED_TEST_P(string_traits_test, mutable_strptr) {
     EXPECT_NE( StringTraits::mutable_strptr::get(str2), 
                (raw_strptr_type) NULL);
     
-    string_type expected = { 't', 'e' };
+	codeunit_type expected_[] = { 't', 'e' };
+    string_type expected(expected_, expected_ + sizeof(expected_)/sizeof(codeunit_type));
+	
     EXPECT_TRUE(StringTraits::raw_strptr::equals(
                     StringTraits::mutable_strptr::get(str2), 
                     expected));

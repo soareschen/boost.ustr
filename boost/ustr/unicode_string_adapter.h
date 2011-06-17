@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include "incl.h"
 #include "policy.h"
 #include "string_traits.h"
@@ -58,13 +59,21 @@ class unicode_string_adapter
         encoding_traits::codepoint_iterator_type                    codepoint_iterator_type;
     typedef typename 
         std::back_insert_iterator<mutable_adapter_type>             codepoint_output_iterator_type;
+        
+	typedef codepoint_iterator_type                                 iterator;
+    typedef codepoint_type                                          value_type;
 
     typedef typename
         string_traits::raw_char_type                                raw_char_type;
 
     typedef unicode_string_adapter<
         StringT, StringTraits, EncodingTraits>                      this_type;
-
+		
+	typedef std::allocator<codepoint_type>                          Allocator;
+    typedef typename iterator::difference_type                      difference_type;
+    typedef typename iterator::reference                            reference;
+    typedef typename Allocator::const_reference                     const_reference;
+    
     static const size_t codeunit_size = string_traits::codeunit_size;
     
     template <typename CodeunitIterator>
@@ -325,12 +334,17 @@ class unicode_string_adapter_builder
 
     typedef typename 
         encoding_traits::codepoint_iterator_type                    codepoint_iterator_type;
+
     typedef typename 
         std::back_insert_iterator<this_type>                        codepoint_output_iterator_type;
 
+    typedef codepoint_output_iterator_type                          iterator;
     typedef codepoint_type                                          value_type;
 
+	typedef std::allocator<codepoint_type>                          Allocator;
+    typedef const codepoint_type&                     const_reference;
 
+    
     unicode_string_adapter_builder() :
         _buffer()
     { }
@@ -390,9 +404,9 @@ class unicode_string_adapter_builder
     }
 
   private:
-    unicode_string_adapter_builder(this_type&) = delete;
-    bool operator ==(const this_type&) const = delete;
-    this_type& operator =(const this_type&) = delete;
+    //unicode_string_adapter_builder(this_type&) = delete;
+    //bool operator ==(const this_type&) const = delete;
+    //this_type& operator =(const this_type&) = delete;
 
     mutable_strptr_type _buffer;
 };
