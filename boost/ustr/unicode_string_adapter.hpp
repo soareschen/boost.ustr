@@ -255,7 +255,7 @@ class unicode_string_adapter
      * level so it may not be entirely accurate, but it is more efficient. A full blown
      * normalized comparison function is available at the supplement Unicode utility library.
      */
-    template<typename StringT_, typename StringTraits_, typename EncodingTraits_>
+    template <typename StringT_, typename StringTraits_, typename EncodingTraits_>
     bool operator ==(const unicode_string_adapter<
             StringT_, StringTraits_, EncodingTraits_>& other) const 
     {
@@ -280,6 +280,16 @@ class unicode_string_adapter
         }
 
         return true;
+    }
+
+    template <typename StringT_, typename StringTraits_, typename EncodingTraits_>
+    this_type operator +(const unicode_string_adapter<
+            StringT_, StringTraits_, EncodingTraits_>& other) const
+    {
+        mutable_adapter_type buffer;
+        buffer.append(*this);
+        buffer.append(other);
+        return buffer.freeze();
     }
 
     string_type operator *() {

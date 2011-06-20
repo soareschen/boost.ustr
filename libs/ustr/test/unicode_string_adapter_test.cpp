@@ -113,6 +113,48 @@ TYPED_TEST_P(string_adapter_double_test, conversion) {
     }
 }
 
+
+TYPED_TEST_P(string_adapter_double_test, concatenation) {
+    typedef typename
+        TypeParam::UString1                             UString1;
+    typedef typename
+        TypeParam::UString2                             UString2;
+    typedef typename
+        UString1::mutable_adapter_type                  UStringBuilder1;
+    typedef typename
+        UString2::mutable_adapter_type                  UStringBuilder2;
+
+    std::vector<utf_string_fixture> fixtures = get_utf_fixtures();
+
+    for(auto fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
+        utf_string_fixture param = *fixture;
+        auto codepoint_it = param.decoded.begin();
+
+        UStringBuilder1 mustr1;
+        UStringBuilder2 mustr2;
+
+        // append the first 2 code points to mustr1
+        for(int i=0; i<2; ++i) {
+            mustr1.append(*codepoint_it);
+            ++codepoint_it;
+        }
+
+        // append the rest of code points to mustr2
+        while(codepoint_it != param.decoded.end()) {
+            mustr2.append(*codepoint_it);
+            ++codepoint_it;
+        }
+
+        UString1 ustr1 = mustr1.freeze();
+        UString2 ustr2 = mustr2.freeze();
+
+        // Now append the two strings together
+        UString1 ustr3 = ustr1 + ustr2;
+
+        EXPECT_TRUE(std::equal(ustr3.begin(), ustr3.end(), param.decoded.begin()));
+    }
+}
+
 class ustr_test_type_param1 {
   public:
     typedef unicode_string_adapter< std::string >           UString1;
@@ -138,7 +180,7 @@ class ustr_test_type_param4 {
 };
 
 REGISTER_TYPED_TEST_CASE_P(string_adapter_single_test, encoding);
-REGISTER_TYPED_TEST_CASE_P(string_adapter_double_test, conversion);
+REGISTER_TYPED_TEST_CASE_P(string_adapter_double_test, conversion, concatenation);
 
 typedef ::testing::Types<
         unicode_string_adapter< std::string >,
