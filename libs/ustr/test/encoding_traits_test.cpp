@@ -1,12 +1,17 @@
 
+//          Copyright Soares Chen Ruo Fei 2011.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
 #include <iterator>
 #include <vector>
 #include <algorithm>
 #include "gtest.h"
-#include "encoding_traits.h"
-#include "string_traits.h"
-#include "policy.h"
-#include "test/fixture.h"
+#include <boost/ustr/encoding_traits.hpp>
+#include <boost/ustr/string_traits.hpp>
+#include <boost/ustr/policy.hpp>
+#include <libs/ustr/test/fixture.hpp>
 
 namespace boost {
 namespace ustr {

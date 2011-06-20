@@ -7,5 +7,6 @@ exe unit_test
     encoding_traits_test.cpp
     /gtest//gtest 
   : 
+    <include>../../..
     <threading>multi 
     <cxxflags>-std=gnu++0x ;

@@ -1,13 +1,18 @@
 
+//          Copyright Soares Chen Ruo Fei 2011.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
 #include <utility>
 #include <string>
 #include <algorithm>
 #include <iterator>
 #include <memory>
-#include "incl.h"
-#include "policy.h"
-#include "string_traits.h"
-#include "encoding_traits.h"
+#include <boost/ustr/incl.hpp>
+#include <boost/ustr/policy.hpp>
+#include <boost/ustr/string_traits.hpp>
+#include <boost/ustr/encoding_traits.hpp>
 
 namespace boost {
 namespace ustr {
@@ -60,7 +65,7 @@ class unicode_string_adapter
     typedef typename 
         std::back_insert_iterator<mutable_adapter_type>             codepoint_output_iterator_type;
         
-	typedef codepoint_iterator_type                                 iterator;
+    typedef codepoint_iterator_type                                 iterator;
     typedef codepoint_type                                          value_type;
 
     typedef typename
@@ -68,8 +73,8 @@ class unicode_string_adapter
 
     typedef unicode_string_adapter<
         StringT, StringTraits, EncodingTraits>                      this_type;
-		
-	typedef std::allocator<codepoint_type>                          Allocator;
+
+    typedef std::allocator<codepoint_type>                          Allocator;
     typedef typename iterator::difference_type                      difference_type;
     typedef typename iterator::reference                            reference;
     typedef typename Allocator::const_reference                     const_reference;
@@ -341,7 +346,7 @@ class unicode_string_adapter_builder
     typedef codepoint_output_iterator_type                          iterator;
     typedef codepoint_type                                          value_type;
 
-	typedef std::allocator<codepoint_type>                          Allocator;
+    typedef std::allocator<codepoint_type>                          Allocator;
     typedef const codepoint_type&                     const_reference;
 
     
@@ -404,9 +409,9 @@ class unicode_string_adapter_builder
     }
 
   private:
-    //unicode_string_adapter_builder(this_type&) = delete;
-    //bool operator ==(const this_type&) const = delete;
-    //this_type& operator =(const this_type&) = delete;
+    unicode_string_adapter_builder(this_type&);
+    bool operator ==(const this_type&) const;
+    this_type& operator =(const this_type&);
 
     mutable_strptr_type _buffer;
 };
