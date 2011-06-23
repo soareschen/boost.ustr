@@ -115,11 +115,13 @@ class unicode_string_adapter
      * The move construction skips the atomic reference count increment
      * of the smart pointer to the underlying shared buffer.
      */
+    #ifdef BOOST_USTR_CPP0X
     unicode_string_adapter(this_type&& other) :
         _buffer(std::move(other._buffer))
     {
         validate();
     }
+    #endif
 
     /*
      * Implicit conversion from any const adapter of different encodings.
@@ -175,11 +177,13 @@ class unicode_string_adapter
     /*
      * Explicit lightweight move construction from a const pointer to the string.
      */
+    #ifdef BOOST_USTR_CPP0X
     explicit unicode_string_adapter(const_strptr_type&& other) :
         _buffer(std::forward<const_strptr_type>(other))
     {
         validate();
     }
+    #endif
 
     /*
      * Explicit lightweight construction from a raw pointer to the string.
@@ -205,11 +209,13 @@ class unicode_string_adapter
     /*
      * Implicit move construction from existing mutable adapter.
      */
+    #ifdef BOOST_USTR_CPP0X
     unicode_string_adapter(mutable_adapter_type&& other) :
         _buffer(string_traits::mutable_strptr::release(other.release()))
     {
         validate();
     }
+    #endif
 
     mutable_adapter_type edit() const {
         const raw_strptr_type original_buffer = string_traits::const_strptr::get(_buffer);
@@ -286,12 +292,19 @@ class unicode_string_adapter
     this_type operator +(const unicode_string_adapter<
             StringT_, StringTraits_, EncodingTraits_>& other) const
     {
+        return add(other);
+    }
+
+    template <typename StringT_, typename StringTraits_, typename EncodingTraits_>
+    this_type add(const unicode_string_adapter<
+            StringT_, StringTraits_, EncodingTraits_>& other) const
+    {
         mutable_adapter_type buffer;
         buffer.append(*this);
         buffer.append(other);
         return buffer.freeze();
     }
-
+    
     string_type operator *() {
         return to_string();
     }
@@ -331,6 +344,7 @@ class unicode_string_adapter_builder
 
     typedef unicode_string_adapter_builder<
         StringT, StringTraits, EncodingTraits>                      this_type;
+    typedef typename this_type&                                     reference;
 
     typedef unicode_string_adapter<
         StringT, StringTraits, EncodingTraits>                      const_adapter_type;

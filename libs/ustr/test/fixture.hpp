@@ -26,9 +26,13 @@ class utf_string_fixture {
         return *this;
     }
 
-    const std::vector<codepoint_type> decoded;
-    const std::vector<char> u8_encoded;
-    const std::vector<char16_t> u16_encoded;
+    typedef std::vector<codepoint_type> decoded_t;
+    typedef std::vector<char> u8_encoded_t;
+    typedef std::vector<char16_t> u16_encoded_t;
+
+    const decoded_t decoded;
+    const u8_encoded_t u8_encoded;
+    const u16_encoded_t u16_encoded;
 };
 
 inline std::vector<utf_string_fixture>

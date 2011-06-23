@@ -4,6 +4,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#define _SCL_SECURE_NO_WARNINGS // todo: Should be for MSVC only
+
 #include <iterator>
 #include <vector>
 #include <algorithm>
@@ -30,9 +32,12 @@ class u8_fixture {
     u8_fixture operator =(const u8_fixture& other) {
         return *this;
     }
+    
+    typedef codepoint_type decoded_t;
+    typedef string encoded_t;
 
-    const codepoint_type decoded;
-    const string encoded;
+    const decoded_t decoded;
+    const encoded_t encoded;
 };
 
 class utf8_encoding_test : public ::testing::TestWithParam<u8_fixture> { };
@@ -44,7 +49,7 @@ TEST_P(utf8_encoding_test, single_codepoint) {
     utf8_encoder<error_policy>::encode(param.decoded, std::back_inserter(encoded));
     EXPECT_EQ(encoded, param.encoded);
 
-    auto begin = param.encoded.begin();
+    u8_fixture::encoded_t::const_iterator begin = param.encoded.begin();
 
     codepoint_type decoded = utf8_encoder<error_policy>::decode(begin, param.encoded.end());
     EXPECT_EQ(begin, param.encoded.end());
@@ -115,9 +120,10 @@ TYPED_TEST_P(encoding_traits_test, fixture_test) {
     typedef typename
         fixture_encoder::encoded_type                       encoded_type;
 
-    std::vector<utf_string_fixture> fixtures = get_utf_fixtures();
+    typedef std::vector<utf_string_fixture> fixture_t;
+    fixture_t fixtures = get_utf_fixtures();
 
-    for(auto fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
+    for(fixture_t::iterator fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
         utf_string_fixture param = *fixture;
 
         encoded_type encoded = fixture_encoder::get_encoded(param);
@@ -126,7 +132,7 @@ TYPED_TEST_P(encoding_traits_test, fixture_test) {
 
         mutable_strptr_type buffer(StringTraits::new_string());
 
-        for(auto it = param.decoded.begin(); it != param.decoded.end(); ++it) {
+        for(utf_string_fixture::decoded_t::const_iterator it = param.decoded.begin(); it != param.decoded.end(); ++it) {
             EncodingTraits::append_codepoint(buffer, *it);
         }
 
@@ -134,14 +140,15 @@ TYPED_TEST_P(encoding_traits_test, fixture_test) {
 
         StringT encoded_string = StringTraits::string::from_iter(encoded.begin(), encoded.end());
         typename std::vector<codepoint_type>::const_iterator expected_it = param.decoded.begin();
-        codepoint_iterator it(encoded_string.begin(), encoded_string.end());
+        codepoint_iterator it2(encoded_string.begin(), encoded_string.end());
+        // Was 'it' instead of 'it2', but MSVC8 gave warning C4288.
 
-        while(it != codepoint_iterator(encoded_string.end()))     
+        while(it2 != codepoint_iterator(encoded_string.end()))     
         {
             ASSERT_NE(expected_it, param.decoded.end());
-            EXPECT_EQ(*it, *expected_it);
-            EXPECT_EQ(*it, *expected_it); // test repeated dereference
-            ++it;
+            EXPECT_EQ(*it2, *expected_it);
+            EXPECT_EQ(*it2, *expected_it); // test repeated dereference
+            ++it2;
             ++expected_it;
         }
 

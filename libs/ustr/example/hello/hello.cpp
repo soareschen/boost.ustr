@@ -20,7 +20,7 @@ int main() {
     // Pass my_unicode_string to a very complex Unicode string
     // processing function (in this case add_suffix for illustration)
     // and get back a new Unicode string.
-    unicode_string_adapter< std::string > 
+    unicode_string_adapter<std::string> 
     my_new_unicode_string = add_suffix(my_unicode_string);
 
     // The raw std::string can be obtained easily through operator *().
@@ -41,7 +41,7 @@ int main() {
  */
 template <typename StringT, typename StringTraits, typename EncodingTraits>
 unicode_string_adapter<StringT, StringTraits, EncodingTraits>
-add_suffix(const unicode_string_adapter<StringT, StringTraits, EncodingTraits>& str) {
+add_suffix(unicode_string_adapter<StringT, StringTraits, EncodingTraits> str) {
     // "你好" encoded in UTF-16 (means hello)
     static char16_t suffix[] = { 0x4F60, 0x597D };
 
@@ -55,5 +55,8 @@ add_suffix(const unicode_string_adapter<StringT, StringTraits, EncodingTraits>& 
     // but library users can pass to the API different encoding and 
     // different container (in this case UTF-8 in std::string)
     // and it can still work flawlessly.
-    return str + unicode_suffix;
+    unicode_string_adapter<StringT, StringTraits, EncodingTraits>
+    new_str = str + unicode_suffix;
+    
+    return new_str;
 }

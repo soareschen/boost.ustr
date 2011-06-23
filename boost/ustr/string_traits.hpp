@@ -54,8 +54,11 @@ class string_traits {
 
     typedef string_type*                            raw_strptr_type;
     typedef const string_type*                      const_raw_strptr_type;
-    typedef std::shared_ptr<const string_type>      const_strptr_type;
-    typedef std::unique_ptr<string_type>            mutable_strptr_type;
+    typedef boost::shared_ptr<const string_type>    const_strptr_type;
+    typedef boost::shared_ptr<string_type>          mutable_strptr_type;
+    // We've got to use shared_ptr when unique_ptr isn't available, because
+    // a boost::scoped_ptr can't be returned under C++03 (since returning it
+    // requires copying it, and it's non-copyable).
 
     typedef typename
         string_type::const_iterator                 codeunit_iterator_type;
@@ -173,12 +176,18 @@ class string_traits {
 
     struct mutable_strptr {
         static raw_strptr_type release(mutable_strptr_type& str) {
-            return str.release();
+            raw_strptr_type r = str.get();
+            str.reset();
+            return r;
         }
 
+        #ifdef BOOST_USTR_CPP0X
         static raw_strptr_type release(mutable_strptr_type&& str) {
-            return str.release();
+            raw_strptr_type r = str.get();
+            str.reset();
+            return r;
         }
+        #endif
 
         static raw_strptr_type get(mutable_strptr_type& str) {
             return str.get();

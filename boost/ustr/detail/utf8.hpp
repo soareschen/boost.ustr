@@ -76,15 +76,15 @@ inline bool is_quad_codeunit(const unsigned char& codeunit) {
 }
 
 inline unsigned char build_last_byte(const codepoint_type& codepoint) {
-    return CONTINUATION_BYTE_PREFIX | (codepoint & BIT_ONE_TO_SIX);
+    return static_cast<unsigned char>(CONTINUATION_BYTE_PREFIX | (codepoint & BIT_ONE_TO_SIX));
 }
 
 inline unsigned char build_second_last_byte(const codepoint_type& codepoint) {
-    return CONTINUATION_BYTE_PREFIX | ((codepoint >> 6) & BIT_ONE_TO_SIX);
+    return static_cast<unsigned char>(CONTINUATION_BYTE_PREFIX | ((codepoint >> 6) & BIT_ONE_TO_SIX));
 }
 
 inline unsigned char build_third_last_byte(const codepoint_type& codepoint) {
-    return CONTINUATION_BYTE_PREFIX | ((codepoint >> 12) & BIT_ONE_TO_SIX);
+    return static_cast<unsigned char>(CONTINUATION_BYTE_PREFIX | ((codepoint >> 12) & BIT_ONE_TO_SIX));
 }
 
 template <typename Policy>
@@ -106,16 +106,16 @@ class utf8_encoder {
     template <typename OutputIterator>
     static inline void encode(const codepoint_type& codepoint, OutputIterator out, Policy policy = Policy()) {
         if(has_single_codeunit(codepoint)) {
-            *out++ = codepoint;
+            *out++ = static_cast<char>(codepoint);
         } else if(has_double_codeunit(codepoint)) {
-            *out++ = DOUBLE_BYTE_PREFIX | ((codepoint >> 6) & BIT_ONE_TO_SIX);
+            *out++ = static_cast<const char>(DOUBLE_BYTE_PREFIX | ((codepoint >> 6) & BIT_ONE_TO_SIX));
             *out++ = build_last_byte(codepoint);
         } else if(has_triple_codeunit(codepoint)) {
-            *out++ = TRIPLE_BYTE_PREFIX | ((codepoint >> 12) & BIT_ONE_TO_SIX);
+            *out++ = static_cast<const char>(TRIPLE_BYTE_PREFIX | ((codepoint >> 12) & BIT_ONE_TO_SIX));
             *out++ = build_second_last_byte(codepoint);
             *out++ = build_last_byte(codepoint);
         } else if(has_quad_codeunit(codepoint)) {
-            *out++ = QUAD_BYTE_PREFIX | ((codepoint >> 18) & BIT_ONE_TO_THREE);
+            *out++ = static_cast<const char>(QUAD_BYTE_PREFIX | ((codepoint >> 18) & BIT_ONE_TO_THREE));
             *out++ = build_third_last_byte(codepoint);
             *out++ = build_second_last_byte(codepoint);
             *out++ = build_last_byte(codepoint);

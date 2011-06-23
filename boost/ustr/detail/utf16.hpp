@@ -49,11 +49,11 @@ inline bool is_double_codeunit(const codepoint_type& codepoint) {
 
 inline utf16_codeunit_type get_high_surrogate(const codepoint_type& codepoint) {
     codepoint_type normalized = codepoint - 0x10000;
-    return ((normalized >> 10) & BIT_ONE_TO_TEN) | HI_SURROGATE_PREFIX;
+    return static_cast<utf16_codeunit_type>(((normalized >> 10) & BIT_ONE_TO_TEN) | HI_SURROGATE_PREFIX);
 }
 
 inline utf16_codeunit_type get_low_surrogate(const codepoint_type& codepoint) {
-    return (codepoint & BIT_ONE_TO_TEN) | LO_SURROGATE_PREFIX;
+    return static_cast<utf16_codeunit_type>((codepoint & BIT_ONE_TO_TEN) | LO_SURROGATE_PREFIX);
 }
 
 inline bool is_high_surrogate(const utf16_codeunit_type& codeunit) {
@@ -74,7 +74,7 @@ class utf16_encoder {
     template <typename OutputIterator>
     static inline void encode(const codepoint_type& codepoint, OutputIterator out, Policy policy = Policy()) {
         if(is_single_codeunit(codepoint)) {
-            *out++ = codepoint & 0xFFFF;
+            *out++ = static_cast<const char16_t>(codepoint & 0xFFFF);
         } else if(is_double_codeunit(codepoint)) {
             utf16_codeunit_type hi = get_high_surrogate(codepoint);
             utf16_codeunit_type lo = get_low_surrogate(codepoint);

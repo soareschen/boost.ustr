@@ -4,6 +4,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#define _SCL_SECURE_NO_WARNINGS // todo: should be defined on MSVC only
+
 #include <string>
 #include <vector>
 #include <list>
@@ -12,6 +14,7 @@
 #include <boost/ustr/string_traits.hpp>
 #include <boost/ustr/encoding_traits.hpp>
 #include <libs/ustr/test/fixture.hpp>
+#include "incl.hpp"
 #include "gtest.h"
 
 namespace boost {
@@ -41,9 +44,10 @@ TYPED_TEST_P(string_adapter_single_test, encoding) {
     typedef typename
         fixture_encoder::encoded_type                   encoded_type;
 
-    std::vector<utf_string_fixture> fixtures = get_utf_fixtures();
+    typedef std::vector<utf_string_fixture> fixture_t;
+    fixture_t fixtures = get_utf_fixtures();
 
-    for(auto fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
+    for(fixture_t::iterator fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
         utf_string_fixture param = *fixture;
         encoded_type encoded = fixture_encoder::get_encoded(param);
 
@@ -81,9 +85,10 @@ TYPED_TEST_P(string_adapter_double_test, conversion) {
     typedef typename
         fixture_encoder2::encoded_type                  encoded_type2;
 
-    std::vector<utf_string_fixture> fixtures = get_utf_fixtures();
+    typedef std::vector<utf_string_fixture> fixture_t;
+    fixture_t fixtures = get_utf_fixtures();
 
-    for(auto fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
+    for(fixture_t::iterator fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
         utf_string_fixture param = *fixture;
         encoded_type encoded = fixture_encoder::get_encoded(param);
         encoded_type2 encoded2 = fixture_encoder2::get_encoded(param);
@@ -91,8 +96,8 @@ TYPED_TEST_P(string_adapter_double_test, conversion) {
         UString    ustr1_1 = UString::from_codeunits(encoded.begin(), encoded.end());
         UString2   ustr2_1 = UString2::from_codeunits(encoded2.begin(), encoded2.end());
 
-        auto uit = ustr2_1.begin();
-        for(auto it = param.decoded.begin(); it != param.decoded.end(); ++it) {
+        UString2::iterator uit = ustr2_1.begin();
+        for(utf_string_fixture::decoded_t::const_iterator it = param.decoded.begin(); it != param.decoded.end(); ++it) {
             EXPECT_EQ(*uit, *it);
             ++uit;
         }
@@ -124,11 +129,12 @@ TYPED_TEST_P(string_adapter_double_test, concatenation) {
     typedef typename
         UString2::mutable_adapter_type                  UStringBuilder2;
 
-    std::vector<utf_string_fixture> fixtures = get_utf_fixtures();
+    typedef std::vector<utf_string_fixture> fixture_t;
+    fixture_t fixtures = get_utf_fixtures();
 
-    for(auto fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
+    for(fixture_t::iterator fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
         utf_string_fixture param = *fixture;
-        auto codepoint_it = param.decoded.begin();
+        utf_string_fixture::decoded_t::const_iterator codepoint_it = param.decoded.begin();
 
         UStringBuilder1 mustr1;
         UStringBuilder2 mustr2;
