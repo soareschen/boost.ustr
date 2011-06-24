@@ -8,7 +8,7 @@ using namespace boost::ustr;
 
 template <typename StringT, typename StringTraits, typename EncodingTraits>
 unicode_string_adapter<StringT, StringTraits, EncodingTraits>
-add_suffix(const unicode_string_adapter<StringT, StringTraits, EncodingTraits>& str);
+add_suffix(unicode_string_adapter<StringT, StringTraits, EncodingTraits> str);
 
 int main() {
     // "世界" encoded in UTF-8 (means world)
@@ -24,11 +24,11 @@ int main() {
     my_new_unicode_string = add_suffix(my_unicode_string);
 
     // The raw std::string can be obtained easily through operator *().
-    std::string my_new_raw_string = *my_new_unicode_string;
+    std::string raw_string = *my_new_unicode_string;
 
     // If the terminal encoding is configured correctly, this should
     // display the chinese characters "世界你好".
-    std::cout << my_new_raw_string << std::endl;
+    std::cout << raw_string << std::endl;
 }
 
 /*
@@ -42,13 +42,17 @@ int main() {
 template <typename StringT, typename StringTraits, typename EncodingTraits>
 unicode_string_adapter<StringT, StringTraits, EncodingTraits>
 add_suffix(unicode_string_adapter<StringT, StringTraits, EncodingTraits> str) {
+    typedef unicode_string_adapter<
+        StringT, StringTraits, EncodingTraits>              other_type;
+    typedef unicode_string_adapter<
+        std::vector< utf16_codeunit_type > >                this_type;
+
     // "你好" encoded in UTF-16 (means hello)
-    static char16_t suffix[] = { 0x4F60, 0x597D };
+    utf16_codeunit_type suffix[] = { 0x4F60, 0x597D };
 
     // static unicode strings used within a library still has
     // to be held in certain encoding and container.
-    static unicode_string_adapter< std::vector<char16_t> > 
-    unicode_suffix( std::vector<char16_t>(suffix) );
+    this_type unicode_suffix = this_type::from_codeunits(suffix, suffix + sizeof(suffix)/sizeof(utf16_codeunit_type));
 
     // Now library developers can choose their own favorite encoding
     // and container internally (in this case UTF-16 in std::vector), 

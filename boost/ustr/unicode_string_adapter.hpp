@@ -75,9 +75,7 @@ class unicode_string_adapter
         StringT, StringTraits, EncodingTraits>                      this_type;
 
     typedef std::allocator<codepoint_type>                          Allocator;
-    typedef typename iterator::difference_type                      difference_type;
-    typedef typename iterator::reference                            reference;
-    typedef typename Allocator::const_reference                     const_reference;
+    typedef this_type&                                              reference;
     
     static const size_t codeunit_size = string_traits::codeunit_size;
     

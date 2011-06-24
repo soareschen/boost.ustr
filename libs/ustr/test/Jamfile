@@ -5,8 +5,8 @@ exe unit_test
     unicode_string_adapter_test.cpp 
     string_traits_test.cpp
     encoding_traits_test.cpp
-    /gtest//gtest 
+    /gtest//gtest/<link>static
   : 
     <include>../../..
-    <include>../../../../boost_1_46_1
+    <include>"../boost_1_46_1"
     <threading>multi ;

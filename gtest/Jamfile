@@ -2,4 +2,4 @@
 project
     : usage-requirements <include>include ;
 
-lib gtest : gtest-all.cc ;
+lib gtest : gtest-all.cc/<link>static ;

@@ -3,6 +3,6 @@ exe hello
   : 
     hello.cpp 
   : 
-    <include>../../../..
-    <threading>multi 
-    <cxxflags>-std=gnu++0x ;
+    <include>../../../..    
+    <include>"../boost_1_46_1"
+    <threading>multi ;
