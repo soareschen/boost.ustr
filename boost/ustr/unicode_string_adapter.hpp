@@ -68,15 +68,22 @@ class unicode_string_adapter
     typedef typename 
         std::back_insert_iterator<mutable_adapter_type>             codepoint_output_iterator_type;
         
-    typedef codepoint_iterator_type                                 iterator;
-    typedef codepoint_type                                          value_type;
-    typedef this_type&                                              reference;
-
     typedef typename
         string_traits::raw_char_type                                raw_char_type;
 
-    typedef std::allocator<codepoint_type>                          Allocator;
-    
+    // STL Container Boilerplate typedefs
+    typedef std::allocator<codepoint_type>                          allocator_type;
+    typedef codepoint_iterator_type                                 iterator;
+    typedef const codepoint_iterator_type                           const_iterator;
+    typedef size_t                                                  size_type;
+    typedef ptrdiff_t                                               difference_type;
+    typedef codepoint_type                                          value_type;
+    typedef codepoint_type&                                         reference;
+    typedef const codepoint_type&                                   const_reference;
+    typedef codepoint_type*                                         pointer;
+    typedef const codepoint_type*                                   const_pointer;
+
+
     static const size_t codeunit_size = string_traits::codeunit_size;
     
     template <typename CodeunitIterator>
@@ -113,13 +120,13 @@ class unicode_string_adapter
      * The move construction skips the atomic reference count increment
      * of the smart pointer to the underlying shared buffer.
      */
-    #ifdef BOOST_USTR_CPP0X
+#ifndef BOOST_NO_RVALUE_REFERENCES
     unicode_string_adapter(this_type&& other) :
         _buffer(std::move(other._buffer))
     {
         validate();
     }
-    #endif
+#endif
 
     /*
      * Implicit conversion from any const adapter of different encodings.
@@ -156,13 +163,13 @@ class unicode_string_adapter
     /*
      * Explicit lightweight move construction from a const pointer to the string.
      */
-    #ifdef BOOST_USTR_CPP0X
+#ifndef BOOST_NO_RVALUE_REFERENCES
     explicit unicode_string_adapter(const_strptr_type&& other) :
         _buffer(std::forward<const_strptr_type>(other))
     {
         validate();
     }
-    #endif
+#endif
 
     /*
      * Explicit lightweight construction from a raw pointer to the string.
@@ -188,13 +195,13 @@ class unicode_string_adapter
     /*
      * Implicit move construction from existing mutable adapter.
      */
-    #ifdef BOOST_USTR_CPP0X
+#ifndef BOOST_NO_RVALUE_REFERENCES
     unicode_string_adapter(mutable_adapter_type&& other) :
         _buffer(other.release())
     {
         validate();
     }
-    #endif
+#endif
 
     mutable_adapter_type edit() const {
         const raw_strptr_type original_buffer = string_traits::const_strptr::get(_buffer);
@@ -323,7 +330,6 @@ class unicode_string_adapter_builder
 
     typedef unicode_string_adapter_builder<
         StringT, StringTraits, EncodingTraits>                      this_type;
-    typedef this_type&                                     reference;
 
     typedef unicode_string_adapter<
         StringT, StringTraits, EncodingTraits>                      const_adapter_type;
@@ -346,16 +352,27 @@ class unicode_string_adapter_builder
     typedef typename 
         std::back_insert_iterator<this_type>                        codepoint_output_iterator_type;
 
+    // STL Container Boilerplate typedefs
+    typedef std::allocator<codepoint_type>                          allocator_type;
     typedef codepoint_output_iterator_type                          iterator;
+    typedef const codepoint_output_iterator_type                    const_iterator;
+    typedef size_t                                                  size_type;
+    typedef ptrdiff_t                                               difference_type;
     typedef codepoint_type                                          value_type;
-
-    typedef std::allocator<codepoint_type>                          Allocator;
-    typedef const codepoint_type&                     const_reference;
-
+    typedef codepoint_type&                                         reference;
+    typedef const codepoint_type&                                   const_reference;
+    typedef codepoint_type*                                         pointer;
+    typedef const codepoint_type*                                   const_pointer;
     
     unicode_string_adapter_builder() :
         _buffer()
     { }
+
+#ifndef BOOST_NO_RVALUE_REFERENCES
+    unicode_string_adapter_builder(this_type&& other) :
+        _buffer(string_traits::mutable_strptr::release(other._buffer))
+    { }
+#endif
 
     raw_strptr_type clone_buffer() {
         raw_strptr_type original_buffer = string_traits::mutable_strptr::get(_buffer);
@@ -412,7 +429,7 @@ class unicode_string_adapter_builder
     }
 
   private:
-    unicode_string_adapter_builder(this_type&);
+    unicode_string_adapter_builder(const this_type&);
     bool operator ==(const this_type&) const;
     this_type& operator =(const this_type&);
 

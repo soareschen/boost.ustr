@@ -102,7 +102,7 @@ class utf_encoding_traits {
          * in the UTF-8 string. Please voice out if this violates the
          * rule of C++ iterators, and suggest alternative return types.`
          */
-        codepoint_type operator *() {
+        codepoint_type operator *() const {
             if(_current == _next) {
                 // the iterator has just been incremented
                 return encoder::decode(_next, _end);
@@ -116,7 +116,17 @@ class utf_encoding_traits {
             }
         }
 
+        const codepoint_iterator& operator ++() const {
+            increment();
+            return *this;
+        }
+
         codepoint_iterator& operator ++() {
+            increment();
+            return *this;
+        }
+
+        void increment() const {
             if(_current != _end) {
                 if(_current == _next) {
                     // the iterator has *not* been dereferenced before
@@ -131,19 +141,19 @@ class utf_encoding_traits {
                 
                 _current = _next;
             }
-            return *this;
         }
 
-        bool operator ==(const codepoint_iterator& other) {
+        bool operator ==(const codepoint_iterator& other) const {
             return _current == other._current;
         }
 
-        bool operator !=(const codepoint_iterator& other) {
+        bool operator !=(const codepoint_iterator& other) const {
             return !(_current == other._current);
         }
+
       private:
-        codeunit_iterator_type          _current;
-        codeunit_iterator_type          _next;
+        mutable codeunit_iterator_type          _current;
+        mutable codeunit_iterator_type          _next;
         const codeunit_iterator_type    _end;
     };
 
