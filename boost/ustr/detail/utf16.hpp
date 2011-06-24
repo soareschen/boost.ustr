@@ -23,8 +23,6 @@ using namespace boost::ustr;
  * where wwww = uuuu - 1
  */
 
-typedef char16_t            utf16_codeunit_type;
-
 const utf16_codeunit_type HI_SURROGATE_PREFIX = 0xD800; // 1101 1000 0000 0000
 const utf16_codeunit_type LO_SURROGATE_PREFIX = 0xDC00; // 1101 1100 0000 0000
 
@@ -74,7 +72,7 @@ class utf16_encoder {
     template <typename OutputIterator>
     static inline void encode(const codepoint_type& codepoint, OutputIterator out, Policy policy = Policy()) {
         if(is_single_codeunit(codepoint)) {
-            *out++ = static_cast<const char16_t>(codepoint & 0xFFFF);
+            *out++ = static_cast<const utf16_codeunit_type>(codepoint & 0xFFFF);
         } else if(is_double_codeunit(codepoint)) {
             utf16_codeunit_type hi = get_high_surrogate(codepoint);
             utf16_codeunit_type lo = get_low_surrogate(codepoint);

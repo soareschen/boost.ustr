@@ -14,7 +14,6 @@
 #include <boost/ustr/string_traits.hpp>
 #include <boost/ustr/encoding_traits.hpp>
 #include <libs/ustr/test/fixture.hpp>
-#include "incl.hpp"
 #include "gtest.h"
 
 namespace boost {
@@ -96,7 +95,7 @@ TYPED_TEST_P(string_adapter_double_test, conversion) {
         UString    ustr1_1 = UString::from_codeunits(encoded.begin(), encoded.end());
         UString2   ustr2_1 = UString2::from_codeunits(encoded2.begin(), encoded2.end());
 
-        UString2::iterator uit = ustr2_1.begin();
+        typename UString2::iterator uit = ustr2_1.begin();
         for(utf_string_fixture::decoded_t::const_iterator it = param.decoded.begin(); it != param.decoded.end(); ++it) {
             EXPECT_EQ(*uit, *it);
             ++uit;
@@ -170,19 +169,22 @@ class ustr_test_type_param1 {
 class ustr_test_type_param2 {
   public:
     typedef unicode_string_adapter< std::string >           UString1;
-    typedef unicode_string_adapter< std::vector<char16_t> > UString2;
+    typedef unicode_string_adapter< 
+        std::vector<utf16_codeunit_type> >                  UString2;
 };
 
 class ustr_test_type_param3 {
   public:
-    typedef unicode_string_adapter< std::u16string >        UString1;
+    typedef unicode_string_adapter< 
+        std::basic_string<utf16_codeunit_type> >            UString1;
     typedef unicode_string_adapter< std::vector<char> >     UString2;
 };
 
 class ustr_test_type_param4 {
   public:
-    typedef unicode_string_adapter< std::list<char> >        UString1;
-    typedef unicode_string_adapter< std::list<char16_t> >    UString2;
+    typedef unicode_string_adapter< std::list<char> >       UString1;
+    typedef unicode_string_adapter< 
+        std::list<utf16_codeunit_type> >                    UString2;
 };
 
 REGISTER_TYPED_TEST_CASE_P(string_adapter_single_test, encoding);
@@ -190,11 +192,11 @@ REGISTER_TYPED_TEST_CASE_P(string_adapter_double_test, conversion, concatenation
 
 typedef ::testing::Types<
         unicode_string_adapter< std::string >,
-        unicode_string_adapter< std::u16string >,
+        unicode_string_adapter< std::basic_string<utf16_codeunit_type> >,
         unicode_string_adapter< std::vector<char> >,
-        unicode_string_adapter< std::vector<char16_t> >,
+        unicode_string_adapter< std::vector<utf16_codeunit_type> >,
         unicode_string_adapter< std::list<char> >,
-        unicode_string_adapter< std::list<char16_t> >
+        unicode_string_adapter< std::list<utf16_codeunit_type> >
     > single_test_type_params;
 
 INSTANTIATE_TYPED_TEST_CASE_P(basic, string_adapter_single_test, single_test_type_params);

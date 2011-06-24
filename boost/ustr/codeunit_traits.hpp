@@ -30,13 +30,13 @@ class char_type_by_size<1> {
 template <>
 class char_type_by_size<2> {
   public:
-    typedef char16_t                            type;
+    typedef utf16_codeunit_type                            type;
 };
 
 template <>
 class char_type_by_size<4> {
   public:
-    typedef char32_t                            type;
+    typedef codepoint_type                            type;
 };
 
 template <typename CharT>
@@ -115,8 +115,8 @@ class char_holder<1, CharT> {
     // explicitly disallows any conversion to other size chars,
     // because otherwise it would introduce hard to detect bugs.
     operator wchar_t () = delete;
-    operator char16_t () = delete;
-    operator char32_t () = delete;
+    operator utf16_codeunit_type () = delete;
+    operator codepoint_type () = delete;
 
     // Need to delete operator int() because otherwise the 
     // conversion would still be ambiguous, and conversion
@@ -127,8 +127,8 @@ class char_holder<1, CharT> {
     operator int () = delete;
 
     bool operator ==(wchar_t) = delete;
-    bool operator ==(char16_t) = delete;
-    bool operator ==(char32_t) = delete;
+    bool operator ==(utf16_codeunit_type) = delete;
+    bool operator ==(codepoint_type) = delete;
     bool operator ==(int) = delete;
   private:
     CharT _char;
@@ -138,12 +138,12 @@ class char_holder<1, CharT> {
 template <typename CharT>
 class char_holder<16, CharT> {
   public:
-    typedef char16_t char_type;
+    typedef utf16_codeunit_type char_type;
 
     char_holder(CharT c) : _char(c) { }
 
-    operator char16_t () {
-        return static_cast<char16_t>(_char);
+    operator utf16_codeunit_type () {
+        return static_cast<utf16_codeunit_type>(_char);
     }
 
     // IF IN WINDOWS
@@ -152,8 +152,8 @@ class char_holder<16, CharT> {
     }
 
 
-    bool operator ==(const char16_t& c) {
-        return static_cast<char16_t>(_char) == c;
+    bool operator ==(const utf16_codeunit_type& c) {
+        return static_cast<utf16_codeunit_type>(_char) == c;
     }
 
     bool operator ==(const wchar_t& c) {
@@ -168,13 +168,13 @@ class char_holder<16, CharT> {
     // operator wchar_t () = delete;
     operator char () = delete;
     operator unsigned char () = delete;
-    operator char32_t () = delete;
+    operator codepoint_type () = delete;
     operator int () = delete;
 
     // bool operator ==(wchar_t) = delete;
     bool operator ==(char) = delete;
     bool operator ==(unsigned char) = delete;
-    bool operator ==(char32_t) = delete;
+    bool operator ==(codepoint_type) = delete;
     bool operator ==(int) = delete;
   private:
     CharT       _char;
@@ -184,16 +184,16 @@ class char_holder<16, CharT> {
 template <typename CharT>
 class char_holder<32, CharT> {
   public:
-    typedef char32_t char_type;
+    typedef codepoint_type char_type;
 
     char_holder(CharT c) : _char(c) { }
 
-    operator char32_t () {
-        return static_cast<char32_t>(_char);
+    operator codepoint_type () {
+        return static_cast<codepoint_type>(_char);
     }
 
-    bool operator ==(const char32_t& c) {
-        return static_cast<char32_t>(_char) == c;
+    bool operator ==(const codepoint_type& c) {
+        return static_cast<codepoint_type>(_char) == c;
     }
 
     bool operator ==(const char_holder<32, CharT>& c) {
@@ -203,13 +203,13 @@ class char_holder<32, CharT> {
     operator char () = delete;
     operator unsigned char() = delete;
     operator wchar_t () = delete;
-    operator char16_t () = delete;
+    operator utf16_codeunit_type () = delete;
     operator int () = delete;
 
     bool operator ==(char) = delete;
     bool operator ==(unsigned char) = delete;
     bool operator ==(wchar_t) = delete;
-    bool operator ==(char16_t) = delete;
+    bool operator ==(utf16_codeunit_type) = delete;
     bool operator ==(int) = delete;
 
   private:

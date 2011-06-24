@@ -133,7 +133,7 @@ class unicode_string_adapter
         mutable_adapter_type buffer;
         buffer.append(other);
 
-        _buffer.reset(string_traits::mutable_strptr::release(buffer.release()));
+        _buffer.reset(buffer.release());
     }
 
     /*
@@ -200,7 +200,7 @@ class unicode_string_adapter
      * Explicit copy construction from existing mutable adapter.
      */
     explicit unicode_string_adapter(const mutable_adapter_type& other) :
-        _buffer(string_traits::mutable_strptr::release(other.clone_buffer()))
+        _buffer(other.clone_buffer())
     {
         validate();
     }
@@ -211,7 +211,7 @@ class unicode_string_adapter
      */
     #ifdef BOOST_USTR_CPP0X
     unicode_string_adapter(mutable_adapter_type&& other) :
-        _buffer(string_traits::mutable_strptr::release(other.release()))
+        _buffer(other.release())
     {
         validate();
     }
@@ -344,7 +344,7 @@ class unicode_string_adapter_builder
 
     typedef unicode_string_adapter_builder<
         StringT, StringTraits, EncodingTraits>                      this_type;
-    typedef typename this_type&                                     reference;
+    typedef this_type&                                     reference;
 
     typedef unicode_string_adapter<
         StringT, StringTraits, EncodingTraits>                      const_adapter_type;
@@ -378,14 +378,14 @@ class unicode_string_adapter_builder
         _buffer()
     { }
 
-    mutable_strptr_type clone_buffer() {
+    raw_strptr_type clone_buffer() {
         raw_strptr_type original_buffer = string_traits::mutable_strptr::get(_buffer);
         raw_strptr_type new_buffer = string_traits::clone_string(original_buffer);
-        return mutable_strptr_type(new_buffer);
+        return new_buffer;
     }
 
-    mutable_strptr_type release() {
-        return mutable_strptr_type(string_traits::mutable_strptr::release(_buffer));
+    raw_strptr_type release() {
+        return string_traits::mutable_strptr::release(_buffer);
     }
 
     /*

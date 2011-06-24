@@ -18,7 +18,7 @@ class utf_string_fixture {
   public:
     utf_string_fixture(const std::vector<codepoint_type>& decoded_, 
                       const std::vector<char>& u8_encoded_,
-                      const std::vector<char16_t>& u16_encoded_) :
+                      const std::vector<utf16_codeunit_type>& u16_encoded_) :
         decoded(decoded_), u8_encoded(u8_encoded_), u16_encoded(u16_encoded_)
     { }
     
@@ -28,7 +28,7 @@ class utf_string_fixture {
 
     typedef std::vector<codepoint_type> decoded_t;
     typedef std::vector<char> u8_encoded_t;
-    typedef std::vector<char16_t> u16_encoded_t;
+    typedef std::vector<utf16_codeunit_type> u16_encoded_t;
 
     const decoded_t decoded;
     const u8_encoded_t u8_encoded;
@@ -59,15 +59,15 @@ get_utf_fixtures() {
                                                          '\xE5', '\xA5', '\xBD' };
 
 
-    static const char16_t u16_encoded1[] = { 0x0001, 0x0041, 0x005A, 0x0038, 0x007F };
-    static const char16_t u16_encoded2[] = { 0x0080, 0x0248, 0x0555, 0x07FF };
-    static const char16_t u16_encoded3[] = { 0x0800, 0x1234, 0x5678, 0xFFFF };
-    static const char16_t u16_encoded4[] = { 0xD800, 0xDC00, 0xD851, 0xDE80, 0xDA26, 0xDD99, 
+    static const utf16_codeunit_type u16_encoded1[] = { 0x0001, 0x0041, 0x005A, 0x0038, 0x007F };
+    static const utf16_codeunit_type u16_encoded2[] = { 0x0080, 0x0248, 0x0555, 0x07FF };
+    static const utf16_codeunit_type u16_encoded3[] = { 0x0800, 0x1234, 0x5678, 0xFFFF };
+    static const utf16_codeunit_type u16_encoded4[] = { 0xD800, 0xDC00, 0xD851, 0xDE80, 0xDA26, 0xDD99, 
                                                         0xDBE0, 0xDC88, 0xDBFF, 0xDFFF };
-    static const char16_t u16_encoded5[] = { 0x0048, 0x0065, 0x006C, 0x006C, 0x006F,
+    static const utf16_codeunit_type u16_encoded5[] = { 0x0048, 0x0065, 0x006C, 0x006C, 0x006F,
                                                         0x0020, 0x0057, 0x006F, 0x0072, 0x006C,
                                                         0x0064, 0x0021 };   // Hello World!
-    static const char16_t u16_encoded6[] = { 0x4E16, 0x754C, 0x4F60, 0x597D };
+    static const utf16_codeunit_type u16_encoded6[] = { 0x4E16, 0x754C, 0x4F60, 0x597D };
 
 
     std::vector<utf_string_fixture> fixtures;
@@ -75,37 +75,37 @@ get_utf_fixtures() {
         utf_string_fixture(
                 std::vector<codepoint_type>(decoded1, decoded1 + sizeof(decoded1) / sizeof(codepoint_type)), 
                 std::vector<char>(u8_encoded1, u8_encoded1 + sizeof(u8_encoded1) / sizeof(char)), 
-                std::vector<char16_t>(u16_encoded1, u16_encoded1 + sizeof(u16_encoded1) / sizeof(char16_t))
+                std::vector<utf16_codeunit_type>(u16_encoded1, u16_encoded1 + sizeof(u16_encoded1) / sizeof(utf16_codeunit_type))
         ));
 	fixtures.push_back(
         utf_string_fixture(
                 std::vector<codepoint_type>(decoded2, decoded2 + sizeof(decoded2) / sizeof(codepoint_type)), 
                 std::vector<char>(u8_encoded2, u8_encoded2 + sizeof(u8_encoded2) / sizeof(char)), 
-                std::vector<char16_t>(u16_encoded2, u16_encoded2 + sizeof(u16_encoded2) / sizeof(char16_t))
+                std::vector<utf16_codeunit_type>(u16_encoded2, u16_encoded2 + sizeof(u16_encoded2) / sizeof(utf16_codeunit_type))
         ));
 	fixtures.push_back(
         utf_string_fixture(
                 std::vector<codepoint_type>(decoded3, decoded3 + sizeof(decoded3) / sizeof(codepoint_type)), 
                 std::vector<char>(u8_encoded3, u8_encoded3 + sizeof(u8_encoded3) / sizeof(char)), 
-                std::vector<char16_t>(u16_encoded3, u16_encoded3 + sizeof(u16_encoded3) / sizeof(char16_t))
+                std::vector<utf16_codeunit_type>(u16_encoded3, u16_encoded3 + sizeof(u16_encoded3) / sizeof(utf16_codeunit_type))
         ));
 	fixtures.push_back(
         utf_string_fixture(
                 std::vector<codepoint_type>(decoded4, decoded4 + sizeof(decoded4) / sizeof(codepoint_type)), 
                 std::vector<char>(u8_encoded4, u8_encoded4 + sizeof(u8_encoded4) / sizeof(char)), 
-                std::vector<char16_t>(u16_encoded4, u16_encoded4 + sizeof(u16_encoded4) / sizeof(char16_t))
+                std::vector<utf16_codeunit_type>(u16_encoded4, u16_encoded4 + sizeof(u16_encoded4) / sizeof(utf16_codeunit_type))
         ));
 	fixtures.push_back(
         utf_string_fixture(
                 std::vector<codepoint_type>(decoded5, decoded5 + sizeof(decoded5) / sizeof(codepoint_type)), 
                 std::vector<char>(u8_encoded5, u8_encoded5 + sizeof(u8_encoded5) / sizeof(char)), 
-                std::vector<char16_t>(u16_encoded5, u16_encoded5 + sizeof(u16_encoded5) / sizeof(char16_t))
+                std::vector<utf16_codeunit_type>(u16_encoded5, u16_encoded5 + sizeof(u16_encoded5) / sizeof(utf16_codeunit_type))
         ));
 	fixtures.push_back(
         utf_string_fixture(
                 std::vector<codepoint_type>(decoded6, decoded6 + sizeof(decoded6) / sizeof(codepoint_type)), 
                 std::vector<char>(u8_encoded6, u8_encoded6 + sizeof(u8_encoded6) / sizeof(char)), 
-                std::vector<char16_t>(u16_encoded6, u16_encoded6 + sizeof(u16_encoded6) / sizeof(char16_t))
+                std::vector<utf16_codeunit_type>(u16_encoded6, u16_encoded6 + sizeof(u16_encoded6) / sizeof(utf16_codeunit_type))
         ));
     
 
@@ -128,7 +128,7 @@ class fixture_encoding<1> {
 template <>
 class fixture_encoding<2> {
   public:
-    typedef std::vector<char16_t> encoded_type;
+    typedef std::vector<utf16_codeunit_type> encoded_type;
     
     static inline encoded_type get_encoded(const utf_string_fixture& fixture) {
         return fixture.u16_encoded;

@@ -178,7 +178,7 @@ REGISTER_TYPED_TEST_CASE_P(string_traits_test,
 
 typedef ::testing::Types< 
         std::string, std::vector<char>, std::list<char>,
-        std::u16string, std::vector<char16_t>, std::list<char16_t>
+        std::basic_string<utf16_codeunit_type>, std::vector<utf16_codeunit_type>, std::list<utf16_codeunit_type>
     > string_traits_test_types;
 
 INSTANTIATE_TYPED_TEST_CASE_P(stl_containers, string_traits_test, string_traits_test_types);

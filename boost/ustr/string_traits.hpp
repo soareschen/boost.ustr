@@ -12,13 +12,18 @@
 #include <memory>
 #include <utility>
 #include <algorithm>
+#include <boost/ustr/incl.hpp>
 #include <boost/ustr/codeunit_traits.hpp>
 
 namespace boost {
 namespace ustr {
 
 template <typename StringT>
-class char_type { };
+class char_type { 
+  public:
+    typedef typename
+        StringT::value_type     type;
+};
 
 template < typename CharT, typename CharTraits, typename Alloc >
 class char_type< std::basic_string<CharT, CharTraits, Alloc> > {
@@ -54,11 +59,18 @@ class string_traits {
 
     typedef string_type*                            raw_strptr_type;
     typedef const string_type*                      const_raw_strptr_type;
+
+
+#ifdef BOOST_USTR_CPP0x
+    typedef std::shared_ptr<const string_type>      const_strptr_type;
+    typedef std::unique_ptr<string_type>            mutable_strptr_type;
+#elif BOOST_HAS_TR1_SHARED_PTR
+    typedef std::tr1::shared_ptr<const string_type> const_strptr_type;
+    typedef std::auto_ptr<string_type>              mutable_strptr_type;
+#else
     typedef boost::shared_ptr<const string_type>    const_strptr_type;
-    typedef boost::shared_ptr<string_type>          mutable_strptr_type;
-    // We've got to use shared_ptr when unique_ptr isn't available, because
-    // a boost::scoped_ptr can't be returned under C++03 (since returning it
-    // requires copying it, and it's non-copyable).
+    typedef std::auto_ptr<string_type>              mutable_strptr_type;
+#endif
 
     typedef typename
         string_type::const_iterator                 codeunit_iterator_type;
@@ -176,18 +188,14 @@ class string_traits {
 
     struct mutable_strptr {
         static raw_strptr_type release(mutable_strptr_type& str) {
-            raw_strptr_type r = str.get();
-            str.reset();
-            return r;
+            return str.release();
         }
 
-        #ifdef BOOST_USTR_CPP0X
+#ifndef BOOST_NO_RVALUE_REFERENCES
         static raw_strptr_type release(mutable_strptr_type&& str) {
-            raw_strptr_type r = str.get();
-            str.reset();
-            return r;
+            return str.release();
         }
-        #endif
+#endif
 
         static raw_strptr_type get(mutable_strptr_type& str) {
             return str.get();
@@ -199,7 +207,7 @@ class string_traits {
         }
 
         static void check_and_initialize(mutable_strptr_type& str) {
-            if(!str) {
+            if(!str.get()) {
                 str.reset(new_string());
             }
         }

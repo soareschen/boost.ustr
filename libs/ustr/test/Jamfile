@@ -8,5 +8,5 @@ exe unit_test
     /gtest//gtest 
   : 
     <include>../../..
-    <threading>multi 
-    <cxxflags>-std=gnu++0x ;
+    <include>../../../../boost_1_46_1
+    <threading>multi ;

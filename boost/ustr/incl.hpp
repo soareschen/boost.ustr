@@ -6,19 +6,24 @@
 
 #pragma once
 
-//#define BOOST_USTR_CPP0X
+#include <boost/config.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
+#include <boost/cstdint.hpp>
 
-#ifndef BOOST_USTR_CPP0X
-    #include <boost/cstdint.hpp>
-    #include <boost/shared_ptr.hpp>
-    #include <boost/scoped_ptr.hpp>
-
-    typedef boost::uint16_t char16_t;
-    typedef boost::uint32_t char32_t;
-    
-    namespace std {
-        typedef basic_string<char16_t> u16string;
-    }
+#if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus > 199711L
+#define BOOST_USTR_CPP0X
 #endif
 
-typedef char32_t    codepoint_type;
+
+#ifdef BOOST_NO_CHAR16_T
+    typedef boost::uint16_t     utf16_codeunit_type;
+#else
+    typedef char16_t            utf16_codeunit_type;
+#endif
+
+#ifdef BOOST_NO_CHAR32_T
+    typedef boost::uint32_t     codepoint_type;
+#else
+    typedef char32_t            codepoint_type;
+#endif

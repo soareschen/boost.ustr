@@ -160,7 +160,7 @@ TYPED_TEST_P(encoding_traits_test, fixture_test) {
 REGISTER_TYPED_TEST_CASE_P(encoding_traits_test, fixture_test);
 
 typedef ::testing::Types< std::string, std::vector<char>, 
-        std::vector<char16_t>, std::basic_string<char16_t>
+        std::vector<utf16_codeunit_type>, std::basic_string<utf16_codeunit_type>
     > test_types;
 INSTANTIATE_TYPED_TEST_CASE_P(basic, encoding_traits_test, test_types);
 
