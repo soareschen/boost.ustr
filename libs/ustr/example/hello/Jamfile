@@ -4,5 +4,5 @@ exe hello
     hello.cpp 
   : 
     <include>../../../..    
-    <include>"../boost_1_46_1"
+    <include>"../../../../../boost_1_46_1"
     <threading>multi ;

@@ -8,5 +8,5 @@ exe unit_test
     /gtest//gtest/<link>static
   : 
     <include>../../..
-    <include>"../boost_1_46_1"
+    <include>"../../../../boost_1_46_1"
     <threading>multi ;

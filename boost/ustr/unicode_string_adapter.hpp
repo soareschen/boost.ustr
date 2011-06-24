@@ -46,6 +46,9 @@ class unicode_string_adapter
     typedef EncodingTraits                                          encoding_traits;
 
     typedef unicode_string_adapter<
+        StringT, StringTraits, EncodingTraits>                      this_type;
+
+    typedef unicode_string_adapter<
         StringT, StringTraits, EncodingTraits>                      const_adapter_type;
     typedef unicode_string_adapter_builder<
         StringT, StringTraits, EncodingTraits>                      mutable_adapter_type;
@@ -67,15 +70,12 @@ class unicode_string_adapter
         
     typedef codepoint_iterator_type                                 iterator;
     typedef codepoint_type                                          value_type;
+    typedef this_type&                                              reference;
 
     typedef typename
         string_traits::raw_char_type                                raw_char_type;
 
-    typedef unicode_string_adapter<
-        StringT, StringTraits, EncodingTraits>                      this_type;
-
     typedef std::allocator<codepoint_type>                          Allocator;
-    typedef this_type&                                              reference;
     
     static const size_t codeunit_size = string_traits::codeunit_size;
     
@@ -141,25 +141,6 @@ class unicode_string_adapter
     explicit unicode_string_adapter(const string_type& other) :
         _buffer(string_traits::new_string(other))
     {
-        validate();
-    }
-
-    /*
-     * Explicit construction from a null terminated raw cstring pointer 
-     * that is assumed to be stored in this class' encoding.
-     */
-    explicit unicode_string_adapter(const raw_char_type* other) {
-        mutable_strptr_type buffer;
-        while(*other != 0) {
-            // copy the raw content into the correct string container type.
-            string_traits::mutable_strptr::append(buffer, *other);
-            ++other;
-        }
-
-        // assign the new string container to the buffer pointer
-        _buffer.reset(string_traits::mutable_strptr::release(buffer));
-
-        // validate the encoding correctness of the raw string.
         validate();
     }
 

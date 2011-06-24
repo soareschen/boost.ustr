@@ -8,7 +8,7 @@ using namespace boost::ustr;
 
 template <typename StringT, typename StringTraits, typename EncodingTraits>
 unicode_string_adapter<StringT, StringTraits, EncodingTraits>
-add_suffix(unicode_string_adapter<StringT, StringTraits, EncodingTraits> str);
+add_suffix(const unicode_string_adapter<StringT, StringTraits, EncodingTraits>& str);
 
 int main() {
     // "世界" encoded in UTF-8 (means world)
@@ -41,7 +41,7 @@ int main() {
  */
 template <typename StringT, typename StringTraits, typename EncodingTraits>
 unicode_string_adapter<StringT, StringTraits, EncodingTraits>
-add_suffix(unicode_string_adapter<StringT, StringTraits, EncodingTraits> str) {
+add_suffix(const unicode_string_adapter<StringT, StringTraits, EncodingTraits>& str) {
     typedef unicode_string_adapter<
         StringT, StringTraits, EncodingTraits>              other_type;
     typedef unicode_string_adapter<
