@@ -127,9 +127,6 @@ TYPED_TEST_P(encoding_traits_test, fixture_test) {
         utf_string_fixture param = *fixture;
 
         encoded_type encoded = fixture_encoder::get_encoded(param);
-
-        std::vector<codepoint_type> codepoints = param.decoded;
-
         mutable_strptr_type buffer(StringTraits::new_string());
 
         for(utf_string_fixture::decoded_t::const_iterator it = param.decoded.begin(); it != param.decoded.end(); ++it) {
@@ -140,10 +137,12 @@ TYPED_TEST_P(encoding_traits_test, fixture_test) {
 
         StringT encoded_string = StringTraits::string::from_iter(encoded.begin(), encoded.end());
         typename std::vector<codepoint_type>::const_iterator expected_it = param.decoded.begin();
-        codepoint_iterator it2(encoded_string.begin(), encoded_string.end());
+        codepoint_iterator it2(encoded_string.begin(), encoded_string.begin(), encoded_string.end());
         // Was 'it' instead of 'it2', but MSVC8 gave warning C4288.
 
-        while(it2 != codepoint_iterator(encoded_string.end()))     
+        codepoint_iterator end = codepoint_iterator(
+                encoded_string.end(), encoded_string.begin(), encoded_string.end());
+        while(it2 != end)
         {
             ASSERT_NE(expected_it, param.decoded.end());
             EXPECT_EQ(*it2, *expected_it);
@@ -153,11 +152,56 @@ TYPED_TEST_P(encoding_traits_test, fixture_test) {
         }
 
         EXPECT_TRUE(std::equal(param.decoded.begin(), param.decoded.end(), 
-                    codepoint_iterator(encoded_string.begin(), encoded_string.end())));
+                    codepoint_iterator(encoded_string.begin(), encoded_string.begin(), encoded_string.end())));
     }
 }
 
-REGISTER_TYPED_TEST_CASE_P(encoding_traits_test, fixture_test);
+TYPED_TEST_P(encoding_traits_test, reverse_decode) {
+    typedef TypeParam                                       StringT;
+    typedef string_traits<StringT>                          StringTraits;
+    typedef utf_encoding_traits< 
+        StringTraits, error_policy >                        EncodingTraits;
+    typedef typename
+        StringTraits::raw_strptr_type                       raw_strptr_type;
+    typedef typename
+        StringTraits::mutable_strptr_type                   mutable_strptr_type;
+    typedef typename
+        EncodingTraits::codepoint_iterator_type             codepoint_iterator;
+
+    const size_t codeunit_size = StringTraits::codeunit_size;
+
+    typedef fixture_encoding<codeunit_size>                 fixture_encoder;
+    typedef typename
+        fixture_encoder::encoded_type                       encoded_type;
+
+    typedef typename StringT::iterator                      codeunit_iterator;
+    typedef typename 
+        std::vector<codepoint_type>::const_reverse_iterator reverse_codepoint_iterator;
+
+
+    typedef std::vector<utf_string_fixture> fixture_t;
+    fixture_t fixtures = get_utf_fixtures();
+
+    for(fixture_t::iterator fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
+        utf_string_fixture param = *fixture;
+
+        encoded_type encoded = fixture_encoder::get_encoded(param);
+        StringT encoded_string = StringTraits::string::from_iter(encoded.begin(), encoded.end());
+
+        codeunit_iterator begin = encoded_string.begin();
+        codeunit_iterator end = encoded_string.end();
+        
+        reverse_codepoint_iterator rbegin = param.decoded.rbegin();
+        reverse_codepoint_iterator rend = param.decoded.rend();
+        
+        while(end != begin) {
+            codepoint_type decoded = EncodingTraits::encoder::decode_previous(begin, end);
+            EXPECT_EQ(decoded, *rbegin++);
+        }
+    }
+}
+
+REGISTER_TYPED_TEST_CASE_P(encoding_traits_test, fixture_test, reverse_decode);
 
 typedef ::testing::Types< std::string, std::vector<char>, 
         std::vector<utf16_codeunit_type>, std::basic_string<utf16_codeunit_type>

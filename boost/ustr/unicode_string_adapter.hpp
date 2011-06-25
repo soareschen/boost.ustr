@@ -4,15 +4,17 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <utility>
 #include <string>
 #include <algorithm>
 #include <iterator>
-#include <memory>
+#include <boost/static_assert.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/concept_check.hpp>
 #include <boost/ustr/incl.hpp>
 #include <boost/ustr/policy.hpp>
 #include <boost/ustr/string_traits.hpp>
 #include <boost/ustr/encoding_traits.hpp>
+#include <boost/ustr/detail/unicode_string_adapter_concepts.hpp>
 
 namespace boost {
 namespace ustr {
@@ -75,6 +77,9 @@ class unicode_string_adapter
     typedef std::allocator<codepoint_type>                          allocator_type;
     typedef codepoint_iterator_type                                 iterator;
     typedef const codepoint_iterator_type                           const_iterator;
+    typedef std::reverse_iterator<iterator>                         reverse_iterator;
+    typedef const reverse_iterator                                  const_reverse_iterator;
+
     typedef size_t                                                  size_type;
     typedef ptrdiff_t                                               difference_type;
     typedef codepoint_type                                          value_type;
@@ -83,11 +88,16 @@ class unicode_string_adapter
     typedef codepoint_type*                                         pointer;
     typedef const codepoint_type*                                   const_pointer;
 
-
     static const size_t codeunit_size = string_traits::codeunit_size;
-    
+
+    BOOST_CONCEPT_ASSERT((unicode_string_adapter_concepts<StringT, StringTraits, EncodingTraits>));
+
     template <typename CodeunitIterator>
     static this_type from_codeunits(CodeunitIterator begin, CodeunitIterator end) {
+        BOOST_STATIC_ASSERT((
+                 sizeof(typename std::iterator_traits<CodeunitIterator>::value_type) 
+                 == codeunit_size));
+
         mutable_strptr_type buffer;
         while(begin != end) {
             string_traits::mutable_strptr::append(buffer, *begin++);
@@ -98,6 +108,10 @@ class unicode_string_adapter
 
     template <typename CodepointIterator>
     static this_type from_codepoints(CodepointIterator begin, CodepointIterator end) {
+        BOOST_STATIC_ASSERT((
+                 sizeof(typename std::iterator_traits<CodepointIterator>::value_type) 
+                 == sizeof(codepoint_type)));
+
         mutable_adapter_type buffer;
         std::copy(begin, end, buffer.begin());
 
@@ -209,27 +223,44 @@ class unicode_string_adapter
         return mutable_adapter_type(new_buffer);
     }
 
-    codepoint_iterator_type begin() const {
-        return codepoint_begin();
-    }
-
-    codepoint_iterator_type end() const {
-        return codepoint_end();
-    }
-
-    codepoint_iterator_type codepoint_begin() const {
+    codepoint_iterator_type begin() {
         return codepoint_iterator_type(
+                string_traits::const_strptr::codeunit_begin(_buffer), 
                 string_traits::const_strptr::codeunit_begin(_buffer), 
                 string_traits::const_strptr::codeunit_end(_buffer));
     }
 
-    codepoint_iterator_type codepoint_end() const {
+    const codepoint_iterator_type begin() const {
         return codepoint_iterator_type(
+                string_traits::const_strptr::codeunit_begin(_buffer), 
+                string_traits::const_strptr::codeunit_begin(_buffer), 
+                string_traits::const_strptr::codeunit_end(_buffer));
+    }
+
+    codepoint_iterator_type end() {
+        return codepoint_iterator_type(
+                string_traits::const_strptr::codeunit_end(_buffer),
+                string_traits::const_strptr::codeunit_begin(_buffer), 
+                string_traits::const_strptr::codeunit_end(_buffer));
+    }
+
+    const codepoint_iterator_type end() const {
+        return codepoint_iterator_type(
+                string_traits::const_strptr::codeunit_end(_buffer),
+                string_traits::const_strptr::codeunit_begin(_buffer), 
                 string_traits::const_strptr::codeunit_end(_buffer));
     }
 
     const_strptr_type get_buffer() const {
         return _buffer;
+    }
+
+    reverse_iterator rbegin() {
+        return reverse_iterator(end());
+    }
+
+    reverse_iterator rend() {
+        return reverse_iterator(begin());
     }
 
     /*
@@ -260,10 +291,10 @@ class unicode_string_adapter
             return false;
         }
 
-        codepoint_iterator_type it = codepoint_begin();
-        other_codepoint_iterator_type other_it = other.codepoint_begin();
+        codepoint_iterator_type it = begin();
+        other_codepoint_iterator_type other_it = other.begin();
 
-        while(it != codepoint_end()) {
+        while(it != end()) {
             if(*it != *other_it) {
                 return false;
             }
@@ -301,7 +332,7 @@ class unicode_string_adapter
 
     size_t codepoint_length() const {
         size_t length = 0;
-        for(codepoint_iterator_type it = codepoint_begin(); it != codepoint_end(); ++it) {
+        for(codepoint_iterator_type it = begin(); it != end(); ++it) {
             ++length;
         }
         return length;
@@ -364,6 +395,8 @@ class unicode_string_adapter_builder
     typedef codepoint_type*                                         pointer;
     typedef const codepoint_type*                                   const_pointer;
     
+    BOOST_CONCEPT_ASSERT((unicode_string_adapter_concepts<StringT, StringTraits, EncodingTraits>));
+
     unicode_string_adapter_builder() :
         _buffer()
     { }
@@ -399,10 +432,6 @@ class unicode_string_adapter_builder
     }
 
     codepoint_output_iterator_type begin() {
-        return codepoint_begin();
-    }
-
-    codepoint_output_iterator_type codepoint_begin() {
         return codepoint_output_iterator_type(*this);
     }
 

@@ -7,8 +7,6 @@
 #pragma once
 
 #include <boost/config.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <boost/cstdint.hpp>
 
 #if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus > 199711L

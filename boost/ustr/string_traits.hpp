@@ -14,6 +14,9 @@
 #include <algorithm>
 #include <boost/ustr/incl.hpp>
 #include <boost/ustr/codeunit_traits.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
+#include <boost/type_traits.hpp>
 
 namespace boost {
 namespace ustr {

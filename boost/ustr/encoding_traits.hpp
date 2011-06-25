@@ -16,8 +16,8 @@
 namespace boost { 
 namespace ustr {
 
-
-using namespace boost::ustr::encoding;
+using boost::ustr::encoding::utf8::utf8_encoder;
+using boost::ustr::encoding::utf16::utf16_encoder;
 
 template <size_t codeunit_size, typename Policy>
 class encoding_engine { 
@@ -83,17 +83,23 @@ class utf_encoding_traits {
     }
     
     class codepoint_iterator :
-        public std::iterator<std::forward_iterator_tag, codepoint_type>
+        public std::iterator<std::bidirectional_iterator_tag, codepoint_type>
     {
       public:
+        typedef codepoint_type                      reference;
+        typedef const codepoint_type                const_reference;
+
         codepoint_iterator(
                 codeunit_iterator_type codeunit_it,
+                codeunit_iterator_type begin,
                 codeunit_iterator_type end) :
-            _current(codeunit_it), _next(codeunit_it), _end(end)
+            _current(codeunit_it), _next(codeunit_it), 
+            _begin(begin), _end(end)
         { }
 
-        codepoint_iterator(codeunit_iterator_type end) :
-            _current(end), _next(end), _end(end)
+        codepoint_iterator(const codepoint_iterator& other) :
+            _current(other._current), _next(other._next), 
+            _begin(other._begin), _end(other._end)
         { }
 
         /*
@@ -102,7 +108,7 @@ class utf_encoding_traits {
          * in the UTF-8 string. Please voice out if this violates the
          * rule of C++ iterators, and suggest alternative return types.`
          */
-        codepoint_type operator *() const {
+        const codepoint_type operator *() const {
             if(_current == _next) {
                 // the iterator has just been incremented
                 return encoder::decode(_next, _end);
@@ -126,6 +132,28 @@ class utf_encoding_traits {
             return *this;
         }
 
+        codepoint_iterator operator ++(int) const {
+            codepoint_iterator it(*this);
+            increment();
+            return it;
+        }
+
+        codepoint_iterator& operator --() {
+            decrement();
+            return *this;
+        }
+
+        const codepoint_iterator& operator --() const {
+            decrement();
+            return *this;
+        }
+
+        codepoint_iterator operator --(int) const {
+            codepoint_iterator it(*this);
+            decrement();
+            return it;
+        }
+
         void increment() const {
             if(_current != _end) {
                 if(_current == _next) {
@@ -143,6 +171,23 @@ class utf_encoding_traits {
             }
         }
 
+        void decrement() const {
+            if(_current != _begin) {
+                if(_current == _next) {
+                    // Since _next == _current, after decrementing _next 
+                    // will point right after _current so _next still
+                    // remains valid.
+                    encoder::decode_previous(_begin, _current);
+                } else {
+                    // If _next is already pointing after _current then 
+                    // after decrement _next would become invalid. 
+                    // Hence we'll reset _next to be the same as _current.
+                    encoder::decode_previous(_begin, _current);
+                    _next = _current;
+                }
+            }
+        }
+
         bool operator ==(const codepoint_iterator& other) const {
             return _current == other._current;
         }
@@ -154,7 +199,8 @@ class utf_encoding_traits {
       private:
         mutable codeunit_iterator_type          _current;
         mutable codeunit_iterator_type          _next;
-        const codeunit_iterator_type    _end;
+        const codeunit_iterator_type            _begin;
+        const codeunit_iterator_type            _end;
     };
 
 

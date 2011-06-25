@@ -43,7 +43,7 @@ TYPED_TEST_P(string_adapter_single_test, encoding) {
     typedef typename
         fixture_encoder::encoded_type                   encoded_type;
 
-    typedef std::vector<utf_string_fixture> fixture_t;
+    typedef std::vector<utf_string_fixture>             fixture_t;
     fixture_t fixtures = get_utf_fixtures();
 
     for(fixture_t::iterator fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
@@ -56,7 +56,58 @@ TYPED_TEST_P(string_adapter_single_test, encoding) {
         UString ustr2 = UString::from_codepoints(param.decoded.begin(), param.decoded.end());
         EXPECT_TRUE(std::equal(param.decoded.begin(), param.decoded.end(), ustr2.begin()));
 
+        EXPECT_TRUE(std::equal(ustr1.rbegin(), ustr1.rend(), ustr2.rbegin()));
+        EXPECT_TRUE(std::equal(ustr1.rbegin(), ustr1.rend(), param.decoded.rbegin()));
+
         EXPECT_EQ(ustr2, ustr1);
+    }
+}
+
+template <typename CodepointIterator>
+class same_codepoint {
+  public:
+    same_codepoint(CodepointIterator it) : _it(it) { }
+
+    void operator ()(const codepoint_type& codepoint) {
+        EXPECT_EQ(codepoint, *_it++);
+    }
+
+  private:
+    CodepointIterator _it;
+};
+
+TYPED_TEST_P(string_adapter_single_test, stl_algorithms) {
+    typedef TypeParam                                   UString;
+    typedef typename
+        UString::mutable_adapter_type                   UStringBuilder;
+
+    const size_t codeunit_size = UString::codeunit_size;
+
+    typedef fixture_encoding<codeunit_size>             fixture_encoder;
+    typedef typename
+        fixture_encoder::encoded_type                   encoded_type;
+
+    typedef std::vector<utf_string_fixture>             fixture_t;
+    fixture_t fixtures = get_utf_fixtures();
+
+    for(fixture_t::iterator fixture = fixtures.begin(); fixture != fixtures.end(); ++fixture) {
+        utf_string_fixture param = *fixture;
+        encoded_type encoded = fixture_encoder::get_encoded(param);
+
+        UString ustr1 = UString::from_codepoints(param.decoded.begin(), param.decoded.end());
+
+        /*
+         * std::find test
+         */
+        codepoint_type target = *param.decoded.begin(); // select first codepoint as target
+
+        EXPECT_EQ(std::find(ustr1.begin(), ustr1.end(), target), ustr1.begin());
+
+        /*
+         * std::for_each test
+         */
+        std::for_each(ustr1.begin(), ustr1.end(), 
+                same_codepoint<typename UString::iterator>(ustr1.begin()));
     }
 }
 
@@ -187,7 +238,7 @@ class ustr_test_type_param4 {
         std::list<utf16_codeunit_type> >                    UString2;
 };
 
-REGISTER_TYPED_TEST_CASE_P(string_adapter_single_test, encoding);
+REGISTER_TYPED_TEST_CASE_P(string_adapter_single_test, encoding, stl_algorithms);
 REGISTER_TYPED_TEST_CASE_P(string_adapter_double_test, conversion, concatenation);
 
 typedef ::testing::Types<

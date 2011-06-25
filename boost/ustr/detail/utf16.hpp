@@ -37,11 +37,15 @@ inline bool is_valid_codepoint(const codepoint_type& codepoint) {
         !(UTF16_RESERVED_START <= codepoint && codepoint <= UTF16_RESERVED_END);
 }
 
-inline bool is_single_codeunit(const codepoint_type& codepoint) {
+inline bool is_single_codeunit(const utf16_codeunit_type& codeunit) {
+    return codeunit <= 0xD7FF || (0xE000 <= codeunit && codeunit <= 0xFFFF);
+}
+
+inline bool has_single_codeunit(const codepoint_type& codepoint) {
     return codepoint <= 0xD7FF || (0xE000 <= codepoint && codepoint <= 0xFFFF);
 }
 
-inline bool is_double_codeunit(const codepoint_type& codepoint) {
+inline bool has_double_codeunit(const codepoint_type& codepoint) {
     return 0x10000 <= codepoint && codepoint <= 0x10FFFF;
 }
 
@@ -62,50 +66,87 @@ inline bool is_low_surrogate(const utf16_codeunit_type& codeunit) {
     return (codeunit & BIT_ELEVEN_TO_FIFTEEN) == LO_SURROGATE_PREFIX;
 }
 
-} // namespace utf16
-
-using namespace boost::ustr::encoding::utf16;
+inline codepoint_type decode_two_codeunits(
+        const utf16_codeunit_type& hi, const utf16_codeunit_type& lo) 
+{
+    return  (((hi & BIT_ONE_TO_TEN) << 10) + 0x10000) |
+            (lo & BIT_ONE_TO_TEN);
+}
 
 template <typename Policy = error_policy>
 class utf16_encoder {
   public:
     template <typename OutputIterator>
-    static inline void encode(const codepoint_type& codepoint, OutputIterator out, Policy policy = Policy()) {
-        if(is_single_codeunit(codepoint)) {
+    static inline void encode(const codepoint_type& codepoint, OutputIterator out) {
+        if(has_single_codeunit(codepoint)) {
             *out++ = static_cast<const utf16_codeunit_type>(codepoint & 0xFFFF);
-        } else if(is_double_codeunit(codepoint)) {
+        } else if(has_double_codeunit(codepoint)) {
             utf16_codeunit_type hi = get_high_surrogate(codepoint);
             utf16_codeunit_type lo = get_low_surrogate(codepoint);
 
             *out++ = hi;
             *out++ = lo;
         } else {
-            codepoint_type replacement_codepoint = policy.replace_invalid_codepoint(codepoint);
+            codepoint_type replacement_codepoint = Policy::replace_invalid_codepoint(codepoint);
             assert(replacement_codepoint != codepoint);
             encode(replacement_codepoint, out);
         }
     }
 
     template <typename CodeunitInputIterator>
-    static inline codepoint_type decode(CodeunitInputIterator& begin, const CodeunitInputIterator& end, Policy policy = Policy()) {
+    static inline codepoint_type decode(CodeunitInputIterator& begin, const CodeunitInputIterator& end) {
         utf16_codeunit_type hi = *begin++;
         if(is_high_surrogate(hi)) {
+            if(begin == end) {
+                return Policy::replace_invalid_codepoint();
+            }
+
             utf16_codeunit_type lo = *begin++;
             if(!is_low_surrogate(lo)) {
-                return policy.replace_invalid_codepoint();
+                return Policy::replace_invalid_codepoint();
             } else {
-                return  (((hi & BIT_ONE_TO_TEN) << 10) + 0x10000) |
-                        (lo & BIT_ONE_TO_TEN);
+                return check_and_return(decode_two_codeunits(hi, lo));
             }
         } else if(is_low_surrogate(hi)) {
-            return policy.replace_invalid_codepoint();
+            return Policy::replace_invalid_codepoint();
         } else {
-            return codepoint_type(hi);
+            return static_cast<codepoint_type>(hi);
         }
     }
 
+    template <typename CodeunitIterator>
+    static inline codepoint_type decode_previous(const CodeunitIterator& begin, CodeunitIterator& end) {
+        if(end == begin) {
+            return Policy::replace_invalid_codepoint();
+        }
+
+        utf16_codeunit_type last = *--end;
+
+        if(is_single_codeunit(last)) {
+            return static_cast<codepoint_type>(last);
+        } else if(is_low_surrogate(last)) {
+            if(end == begin) {
+                return Policy::replace_invalid_codepoint();
+            }
+
+            utf16_codeunit_type hi = *--end;
+            return check_and_return(decode_two_codeunits(hi, last));
+        } else {
+            return Policy::replace_invalid_codepoint();
+        }
+    }
+
+  private:
+    static inline codepoint_type check_and_return(const codepoint_type& codepoint) {
+        if(is_valid_codepoint(codepoint)) {
+            return codepoint;
+        } else {
+            return Policy::replace_invalid_codepoint(codepoint);
+        }
+    }
 };
 
+} // namespace utf16
 } // namespace encoding
 } // namespace ustr
 } // namesp
