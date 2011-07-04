@@ -101,6 +101,15 @@ class utf_encoding_traits {
             _current(other._current), _next(other._next), 
             _begin(other._begin), _end(other._end)
         { }
+        
+        codepoint_iterator& operator =(const codepoint_iterator& other) {
+            _current = other._current;
+            _next = other._next;
+            _begin = other._begin;
+            _end = other._end;
+            
+            return *this;
+        }
 
         /*
          * It is not possible to return a reference here, because the 
@@ -199,8 +208,8 @@ class utf_encoding_traits {
       private:
         mutable codeunit_iterator_type          _current;
         mutable codeunit_iterator_type          _next;
-        const codeunit_iterator_type            _begin;
-        const codeunit_iterator_type            _end;
+        codeunit_iterator_type            _begin;
+        codeunit_iterator_type            _end;
     };
 
 
