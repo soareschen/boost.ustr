@@ -5,6 +5,7 @@ exe unit_test
     unicode_string_adapter_test.cpp 
     string_traits_test.cpp
     encoding_traits_test.cpp
+    string_literals_test.cpp
     /gtest//gtest/<link>static
   : 
     <include>../../..

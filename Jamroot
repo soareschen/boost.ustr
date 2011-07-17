@@ -1,4 +1,6 @@
 
+constant BOOST_ROOT : /home/crf/repo/boost_1_46_1 ;
+
 use-project /gtest : gtest ;
 
 build-project libs/ustr/test ;

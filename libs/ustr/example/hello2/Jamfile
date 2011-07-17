@@ -1,0 +1,7 @@
+
+exe hello
+  : 
+    hello.cpp 
+  : 
+    <include>../../../..    
+    <threading>multi ;

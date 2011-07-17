@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <boost/ustr/incl.hpp>
+#include <boost/ustr/detail/incl.hpp>
 
 namespace boost {
 namespace ustr {

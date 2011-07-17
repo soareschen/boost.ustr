@@ -7,32 +7,21 @@
 #include <string>
 #include <algorithm>
 #include <iterator>
+#include <iostream>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/concept_check.hpp>
-#include <boost/ustr/incl.hpp>
 #include <boost/ustr/policy.hpp>
 #include <boost/ustr/string_traits.hpp>
 #include <boost/ustr/encoding_traits.hpp>
+#include <boost/ustr/detail/incl.hpp>
 #include <boost/ustr/detail/unicode_string_adapter_concepts.hpp>
+
+#define USTR(str) \
+    ::boost::ustr::unicode_string_adapter< USTR_STRING_TYPE >(USTR_RAW(str))
 
 namespace boost {
 namespace ustr {
-
-template <
-    typename StringT,
-    typename StringTraits,
-    typename EncodingTraits
->
-class unicode_string_adapter;
-
-template <
-    typename StringT,
-    typename StringTraits,
-    typename EncodingTraits
->
-class unicode_string_adapter_builder;
-
 
 template <
     typename StringT,
@@ -40,6 +29,47 @@ template <
     typename EncodingTraits = utf_encoding_traits<
         StringTraits, replace_policy<'?'> 
     >
+>
+class unicode_string_adapter;
+
+template <
+    typename StringT,
+    typename StringTraits = string_traits<StringT>,
+    typename EncodingTraits = utf_encoding_traits<
+        StringTraits, replace_policy<'?'> 
+    >
+>
+class unicode_string_adapter_builder;
+
+typedef unicode_string_adapter< std::string >   u8_string;
+
+typedef unicode_string_adapter< 
+    std::basic_string<utf16_codeunit_type> >    u16_string;
+
+typedef unicode_string_adapter<
+    std::basic_string<codepoint_type> >         u32_string;
+
+template <
+    typename StringT,
+    typename StringTraits,
+    typename EncodingTraits
+>
+std::ostream&
+operator <<(std::ostream& out, 
+    const unicode_string_adapter<StringT, StringTraits, EncodingTraits>& str)
+{
+    return out << *str;
+}
+
+/*!
+ * Unicode String Adapter class
+ *
+ * An adapter class for Unicode strings. 
+ */
+template <
+    typename StringT,
+    typename StringTraits,
+    typename EncodingTraits
 >
 class unicode_string_adapter
 {
@@ -98,12 +128,12 @@ class unicode_string_adapter
                  sizeof(typename std::iterator_traits<CodeunitIterator>::value_type) 
                  == codeunit_size));
 
-        mutable_strptr_type buffer;
+        mutable_adapter_type buffer;
         while(begin != end) {
-            string_traits::mutable_strptr::append(buffer, *begin++);
+            buffer.append_codeunit(*begin++);
         }
 
-        return this_type(string_traits::mutable_strptr::release(buffer));
+        return buffer.freeze();
     }
 
     template <typename CodepointIterator>
@@ -268,7 +298,7 @@ class unicode_string_adapter
      * It is not possible to return a reference as the new string object is created
      * on the fly.
      */
-    string_type to_string() const {
+    const string_type& to_string() const {
         return *string_traits::const_strptr::get(_buffer);
     }
 
@@ -309,11 +339,11 @@ class unicode_string_adapter
     this_type operator +(const unicode_string_adapter<
             StringT_, StringTraits_, EncodingTraits_>& other) const
     {
-        return add(other);
+        return concat(other);
     }
 
     template <typename StringT_, typename StringTraits_, typename EncodingTraits_>
-    this_type add(const unicode_string_adapter<
+    this_type concat(const unicode_string_adapter<
             StringT_, StringTraits_, EncodingTraits_>& other) const
     {
         mutable_adapter_type buffer;
@@ -322,7 +352,7 @@ class unicode_string_adapter
         return buffer.freeze();
     }
     
-    string_type operator *() {
+    const string_type& operator *() const {
         return to_string();
     }
 
@@ -348,10 +378,8 @@ class unicode_string_adapter
 
 template <
     typename StringT,
-    typename StringTraits = string_traits<StringT>,
-    typename EncodingTraits = utf_encoding_traits< 
-        StringTraits, replace_policy<'?'> 
-    >
+    typename StringTraits,
+    typename EncodingTraits
 >
 class unicode_string_adapter_builder
 {
@@ -395,6 +423,8 @@ class unicode_string_adapter_builder
     typedef codepoint_type*                                         pointer;
     typedef const codepoint_type*                                   const_pointer;
     
+    static const size_t codeunit_size = string_traits::codeunit_size;
+
     BOOST_CONCEPT_ASSERT((unicode_string_adapter_concepts<StringT, StringTraits, EncodingTraits>));
 
     unicode_string_adapter_builder() :
@@ -431,19 +461,41 @@ class unicode_string_adapter_builder
         return const_adapter_type(string_traits::mutable_strptr::release(_buffer));
     }
 
+    const_adapter_type freeze_copy() {
+        return const_adapter_type(clone_buffer());
+    }
+
     codepoint_output_iterator_type begin() {
         return codepoint_output_iterator_type(*this);
     }
 
-    /*
-     * The append operations are not thread safe
-     */
     void append(const codepoint_type& codepoint) {
+        append_codepoint(codepoint);
+    }
+
+    /*
+     * The append operation is not thread safe
+     */
+    void append_codepoint(const codepoint_type& codepoint) {
         encoding_traits::append_codepoint(_buffer, codepoint);
     }
 
     void push_back(const codepoint_type& codepoint) {
-        append(codepoint);
+        append_codepoint(codepoint);
+    }
+
+    template <typename CodeUnit>
+    void append_codeunit(const CodeUnit& codeunit) {
+        // make sure that the code unit is that same size as the string
+        // adapter's code unit size. We can't simply make the parameter
+        // type as codeunit_type because the compiler would automatically
+        // make coercion towards arguments of different size.
+        BOOST_STATIC_ASSERT(sizeof(CodeUnit) == codeunit_size);
+        
+        // For simplicity at this moment, we'll leave the encoding validation 
+        // during freeze().
+        string_traits::mutable_strptr::append(_buffer, 
+                static_cast<codeunit_type>(codeunit));
     }
 
     template <

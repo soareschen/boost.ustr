@@ -12,8 +12,8 @@
 #include <memory>
 #include <utility>
 #include <algorithm>
-#include <boost/ustr/incl.hpp>
-#include <boost/ustr/codeunit_traits.hpp>
+#include <boost/ustr/detail/codeunit_traits.hpp>
+#include <boost/ustr/detail/incl.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/type_traits.hpp>

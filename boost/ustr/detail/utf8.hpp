@@ -6,7 +6,7 @@
 
 #pragma once
 #include <assert.h>
-#include <boost/ustr/incl.hpp>
+#include <boost/ustr/detail/incl.hpp>
 #include <boost/ustr/policy.hpp>
 
 namespace boost {

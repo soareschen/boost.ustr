@@ -1,0 +1,620 @@
+[/==============================================================================
+    Copyright (C) 2003-2010 Thorsten Ottosen, Neil Groves
+
+    Use, modification and distribution is subject to the Boost Software
+    License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt
+==============================================================================/]
+[library Ustr
+    [quickbook 1.5]
+    [version 0.1]
+    [authors [Soares, Chen Ruo Fei]]
+    [copyright 2011 Soares Chen Ruo Fei]
+    [purpose Boost Unicode String Adapter Library]
+    [license
+        Distributed under the Boost Software License, Version 1.0.
+        (See accompanying file LICENSE_1_0.txt or copy at
+        [@http://www.boost.org/LICENSE_1_0.txt])
+    ]
+]
+
+[section:introduction Introduction]
+Boost.Ustr provides a Unicode string adapter class that wraps traditional string containers 
+such as `std::string` to attach Unicode encoding semantics to it.
+
+The main class that is used in Boost.Ustr is `unicode_string_adapter` with the following template signature:
+
+``
+    template <typename StringT, typename StringTraits, typename EncodingTraits>
+    class unicode_string_adapter;
+``
+
+where
+
+* `StringT` is the raw string type that will be wrapped.
+* `StringTraits` is the facade to the manipulation of the raw string.
+* `EncodingTraits` implements the encoding/decoding operations of the raw string content.
+
+Boost.Ustr has default `StringTraits` and `EncodingTraits` for most of the containers. 
+So it is usually sufficient to supply just the raw string type to the template.
+for example, a Unicode string adapter with std::string as the raw string type would be instantiated as
+
+``
+    class unicode_string_adapter< std::string >
+``
+
+[section:benefits Benefits over Raw Strings]
+
+There are several benefits to wrap raw string types within `unicode_string_adapter` instead of 
+using the raw strings directly.
+
+[h3 Code Point Level Access]
+`unicode_string_adapter` encapsulates the encoding/decoding operations of code units of different 
+Unicode encodings. Instead it returns code point iterators in the `begin()` and `end()` methods so that
+developers do not have to concern on which encoding the raw string is actually using.
+
+[h3 Automatic Conversion Between Template Instances]
+A template instance of `unicode_string_adapter` can be automatically converted to another template instance. 
+This is useful for cases such as when the developer uses strings with encoding different from the 
+encoding expected from library APIs.
+
+[h3 Efficient Copy with Immutable String]
+`unicode_string_adapter` is an immutable string class. Internally the raw string is stored on the heap 
+and uses smart pointer to share the raw string among different objects. This gives more efficient copy operation
+that is faster than many raw string types that perform deep copying, including std::string in C++11.
+
+[endsect]
+
+[endsect]
+
+[section:motivation Motivation]
+
+The main reason that Boost.Ustr is developed is because current raw string types such as std::string requires
+developers to make assumption on the encoding of the string content, such as UTF-8 for std::string. This 
+creates inconsistency when a string passed to library APIs has different encoding from the library expects. 
+The problem mainly arise because there are a small minority of developers who use different encoding for the
+same string type.
+
+Various proposals have been made to solve this issue, but most proposals are mainly focused on creating new 
+Unicode string classes that enforce encoding correctness. However the Boost community were reluctant on 
+introducing yet another string class into the C++ ecosystem. This is because std::basic_string has already 
+been widely adopted by the C++ community and the switching cost is belived to be too high for the new string 
+class to be adopted widely. Furthermore, most of the discussions were focusing mainly on the feasibility of 
+creating another string class rather than bringing encoding awareness into strings.
+
+Because string and encoding are two separate issues, it is preferable that string classes should be act as
+raw character containers and leave the encoding issues to a higher layer of abstraction. Using this approach,
+we create `unicode_string_adapter` as a generic adapter for arbitrary string classes to provide encoding 
+awareness through additional layer. This is better than creating new Unicode string classes because developers 
+have the freedom of continue using their own favorite string classes in addition to benefiting from the encoding 
+awareness.
+
+[endsect]
+
+
+[section:unicode_string_adapter Unicode String Adapter]
+
+[section:helper_types Helper Types]
+Prior to C++11, there was no standard way of defining UTF-16 and UTF-32 code unit types in C++. While `wchar_t` 
+was first intended to represent Unicode code unit type, it's exact size is not the same among all platforms. 
+For instance, in Visual C++ `wchar_t` is 16-bit in size to represent UTF-16 code unit, but in GCC `wchar_t` is 
+32-bit in size to represent UTF-32 code unit. The difference make it extremely hard to write portable code that
+uses `wchar_t` in Unicode strings.
+
+With strong demand of standard character types with 16-bit and 32-bit width, C++11 introduces `char16_t` and 
+`char32_t` as standard Unicode code unit types. However as most projects still not yet migrated to C++11, 
+Boost.Ustr provides some helper code unit types to represent these character types in C++03.
+
+`boost::ustr::utf16_codeunit_type` is used as 16-bit code unit type, and is simply typedef to `char16_t` if 
+C++11 is enabled. `boost::ustr::codepoint_type` is used as both 32-bit code unit type and code point type, and 
+is simply typedef to `char32_t` if C++11 is enabled. Although the name of the types are slightly long, they are 
+chosen mainly to avoid confusion with similar names that are already taken by other Unicode projects for 
+potentially different purposes.
+
+For simplicity and easier understanding in this documentation, we will use `char16_t` and `char32_t` in the 
+examples to represent UTF-16 and UTF-32 code unit types and assume C++11 support. To make sure that the code 
+is portable across older compilers, readers are advised to replace the types with  `utf16_codeunit_type` 
+and `codepoint_type` and everything else should continue to work properly.
+[endsect]
+
+[section:template Template Instantiation]
+Before using Boost.Ustr, developer first need to choose a specific string type to make a template instantiation of
+`unicode_string_adapter`. Some common choices of string types are `std::basic_string` and `std::vector`.
+The string types can contain characters of either 8-bit, 16-bit, or 32-bit in size and the appropriate
+UTF encoding will be chosen through the default `EncodingTraits` template parameter. Below are some examples
+of template instance for `unicode_string_adapter`:
+
+``
+    using ::boost::ustr::unicode_string_adapter;
+
+    // UTF-16 encoding string with std::basic_string as raw container
+    class unicode_string_adapter< std::basic_string<char16_t> > 
+
+    // UTF-8 encoding string with std::vector as raw container
+    class unicode_string_adapter< std::vector<char> > 
+
+    // UTF-32 encoding string with std::list as raw container
+    class unicode_string_adapter< std::list<char32_t> > 
+``
+
+For ease of use, Boost.Ustr provides three typedefs for string adapters that use `std::basic_string` for
+UTF-8/16/32 encodings respectively:
+
+``
+    typedef unicode_string_adapter< std::string >   u8_string;
+
+    typedef unicode_string_adapter< 
+        std::basic_string<utf16_codeunit_type> >    u16_string;
+
+    typedef unicode_string_adapter<
+        std::basic_string<codepoint_type> >         u32_string;
+``
+
+There are also two optional template parameters that developer can provide to change the internal behavior of
+`unicode_string_adapter`. The `StringTraits` template parameter should be supplied if the raw string type 
+do not support STL algorithms or has different ways to perform common string operations such as string concatenation.
+The `EncodingTraits` template parameter should be supplied if the raw string content is stored in encodings other
+than UTF-8, UTF-16, or UTF-32. For example, an adapter that uses STL's rope as the raw string class and Shift-JIS 
+as the internal encoding may be written as:
+
+``
+    // String adapter with custom raw string and custom encoding
+    class unicode_string_adapter<
+        stl::rope<char>,
+
+        // custom string traits that would use rope's fast concatenation API.
+        rope_string_traits<char>, 
+
+        // custom non-Unicode encoding that "pretends" to be Unicode encoding
+        shift_jis_encoding_traits< rope_string_traits<char> >
+    >;
+``
+
+More details on how to construct new string traits and encoding traits will be explained in later section.
+
+[endsect]
+
+[section:source_string Unicode String within Source Code]
+
+It is a challenging task to do something as simple as constructing static Unicode strings within source code,
+all thanks to Visual C++ which does not treat `char` literals as UTF-8 encoded, even when the source code encoding 
+is in UTF-8. This problem has been troubling library developers all the time because the encoding of static strings
+can only be determined during compilation time.
+
+Even Boost.Ustr requires some preprocessor hacks to make it possible to safely construct static Unicode strings 
+within source code. To do so a call to the macro `USTR()` on the static string is needed to make sure that the code
+is portable across different compilers. Below is an example of constructing static Unicode string adapters:
+
+``
+    static const unicode_string_adapter< std::string > my_string = USTR("世界你好");
+``
+
+The `USTR()` macro is used to enclose the string literal to make sure that the compiler stores the string in a 
+supported encoding. It is fine even if the intended encoding of the string adapter is not supported by the compiler,
+because `USTR()` will expand the string literal into a compiler-supported `unicode_string_adapter` template instance
+and then automatically convert the encoding during run time. For instance, the above code will be expanded into 
+something like
+
+``
+    // After expansion of USTR() macro
+    static const unicode_string_adapater< std::string >
+    my_string = unicode_string_adapter< std::basic_string<wchar_t> >( L"世界你好" );
+``
+
+Because it is (almost) impossible to construct UTF-8 string literals in Visual C++ prior to C++11, `USTR()` would
+use `unicode_string_adapter< std::basic_string<wchar_t> >` to hold the static string that is constructed using 
+the L"" prefix, which tells the compiler to store the string literal in wchar_t array using UTF-16 encoding.
+
+However because the variable `my_string` has the type of string adapter for std::string, which uses UTF-8 encoding,
+the automatic conversion will kick in during run time to convert the UTF-16 string adapter into
+UTF-8 string adapter.
+
+The `USTR()` macro also comes in handy when constructing string adapters with raw string types that cannot be 
+constructed from C-style character array. For example, `std::string` can be constructed from `const char*` but 
+`std::vector<char>` can't. Without the `USTR()` macro, the construction of 
+`unicode_string_adapter< std::vector<char> >` from `const char*` string literals would fail. 
+
+``
+    // Won't compile: No appropriate constructor from const char*
+    // unicode_string_adapter< std::vector<char> > my_string = "Hello World!";
+
+    // Will compile and also supports Unicode string literals across platforms
+    unicode_string_adapter< std::vector<char> > my_string = USTR("Hello World!");
+
+    // The complete expansion together with the std::string default constructor
+    // (Assuming it is on GCC-C++11 which supports UTF-8 string literal.
+    unicode_string_adapter< std::vector<char> >
+    my_string = unicode_string_adapter< std::string >( std::string(u8"Hello World!") );
+``
+
+Behind the scene, `unicode_string_adapter` actually does not have any constructor that accepts
+C-style character array. However because `std::basic_string` has default constructor that accepts 
+the raw character array, the compiler will match the implicit constructor of `std::basic_string` and then
+only match the implicitly constructed `std::basic_string` with the explicit constructor of 
+`unicode_string_adapter< std::basic_string<CharT> >::unicode_string_adapter(const std::basic_string<CharT>& str)`
+
+`USTR()` will use the new Unicode string literal prefix u"" if C++11 is supported. And whenever possible, 
+`USTR()` will try to instruct the compiler to store the string literal in UTF-8 encoding.
+
+[endsect]
+
+[section:api Unicode String Adapter in Library APIs]
+
+Boost.Ustr solves a painful problem for library developers by making it possible for library APIs to accept 
+Unicode strings stored in any character container with any encoding. Prior to this, library writers have to 
+choose between accepting `std::basic_string` of either `char` or `wchar_t` in their library API, unless they 
+are willing to duplicate the effort to accept both string types.
+
+With Boost.Ustr, there are two ways of accepting Unicode strings in library APIs: one is to use template 
+that accepts generic `unicode_string_adapter` and another is to accept specific template instance of 
+`unicode_string_adapter`. First, the generic API could be constructed similar to as follow:
+
+``
+    template< typename StringT, typename StringTraits, typename EncodingTraits>
+    void my_library_function( unicode_string_adapter<StringT, StringTraits, EncodingTraits> str );
+``
+
+The benefit of this generic approach is that the library will always use the same `unicode_string_adapter` template
+instance as the caller, thereby saving potential cost of converting between different encodings or strings.
+However the down side is that the code become slightly less readable, and this approach cannot be used
+in virtual functions and also functions that return but don't accept Unicode strings. Under these circumstances the 
+library writer then has to choose a specific template instance of `unicode_string_adapter`:
+
+``
+    // Alternative version of the example above
+    void my_alt_library_function( unicode_string_adapter< std::string > str );
+
+    class my_library_class {
+        ...
+        // Virtual functions cannot be templated
+        virtual void my_member_library_function( unicode_string_adapter< std::string > str );
+        ...
+    };
+
+    // Library function that return but do not accept Unicode strings
+    unicode_string_adapter< std::string > my_returning_library_function(int arg);
+``
+
+Even though the library APIs accept or return specific template instance of `unicode_string_adapter`, the automatic 
+conversion facility makes it possible for callers to pass in or receive any template instance of 
+`unicode_string_adapter` through the library APIs without additional effort. For example, the following calls
+to the above example library APIs are valid:
+
+``
+    // my_string is in UTF-16 encoding using std::vector as raw string type
+    unicode_string_adapter< std::vector<char16_t> > my_string = USTR("世界你好");
+
+    // Call generic function that accepts all unicode_string_adapter: OK
+    my_library_function(my_string);
+
+    // Call function that accepts different unicode_string_adapter: OK
+    my_alt_library_function(my_string);
+
+    my_library_class *my_object = new my_library_class();
+    my_object->my_member_library_function(my_string);
+
+    // Function returns UTF-8 string but the variable expects UTF-32 string: OK
+    unicode_string_adapter< std::basic_string<char32_t> > 
+    my_other_string = my_returning_library_function(0);
+``
+
+[endsect]
+
+[section:raw_string Obtaining and Constructing From Raw String]
+
+Because `unicode_string_adapter` only wraps around a raw string type to provide additional functionality, it is
+easy to convert it to and from a raw string instance. A const reference to the internal raw string is easily 
+obtainable through the operator *() function. This is especially useful when the string adapter user wants to 
+pass the string into traditional APIs that accept the raw string. However because `unicode_string_adapter` 
+stores the raw string  object on the heap, developers should note the extra cost of copying the raw string 
+into a local variable and should try to minimize such operation. The raw string specific functions can also 
+be accessed through operator ->(), although only const methods are allowed.
+
+``
+    // Legacy library API that accepts only raw std::string but correctly 
+    // expects UTF-8 encoding
+    void my_legacy_function(const std::string& str);
+
+    unicode_string_adapter< std::string > my_string = USTR("世界你好");
+
+    // A local copy operation is performed to copy the string content
+    // from the heap to the stack. This might get expensive if done too much.
+    std::string my_raw_string = *my_string;
+
+    // Because the function accepts const reference, no extra copying is needed
+    my_legacy_function(*my_string);
+    
+    // Calls std::string::begin(). It returns the raw code unit iterator
+    // instead of the string adapter's code point iterator
+    typename std::string::const_iterator it = my_string->begin();
+``
+
+While obtaining raw string from `unicode_string_adapter` is quite simple, constructing string adapter 
+from raw string is slightly more complicated. Firstly the constructer from raw string type is made explicit 
+to prevent accidental conversion. This is required because not all raw strings store their content in the 
+expected Unicode encoding. The explicit construction force the developer to make aware of the type conversion 
+so that the developer can personally make sure that the raw string is in the expected encoding.
+
+Furthermore, because `unicode_string_adapter` stores the raw string on the heap, a copy operation would be 
+necessary when default constructing from reference of strings. This is also unavoidable as the original 
+raw string might be mutable while `unicode_string_adapter` is immutable, therefore making the potentially 
+mutable string content unshareable. If performance is in concern developer may use other explicit constructors 
+that accept raw pointer or shared pointer of the raw string.
+
+``
+    // It is however not portable to construct Unicode string literals 
+    // in this way, so we use English here.
+    std::string my_raw_string = "Hello World!";
+
+    // Explicit constructor is called
+    unicode_string_adapter<std::string> my_unicode_string(my_raw_string);
+
+    void my_library_function(unicode_string_adapter<std::string> arg);
+
+    // When passed to functions that accept unicode_string_adapter,
+    // the constructor must be explicitly called
+    my_library_function( unicode_string_adapter<std::string>(my_raw_string) );
+
+    // This won't compile because there's no implicit conversion
+    // my_library_function(my_raw_string);
+
+    const std::string *my_string_ptr = new std::string("Hello World!");
+
+    // No extra copying needed
+    // However be careful to not use the raw pointer anymore because
+    // the ownership has been transfered!
+    unicode_string_adapter<std::string> my_unicode_string2(my_string_ptr);
+``
+
+[endsect]
+
+[section:building_strings Building Unicode Strings]
+Other than building from raw strings, `unicode_string_adapter` also provides two static helper functions
+to construct from generic code point iterators and code unit iterators. This is useful for conversion to 
+`unicode_string_adapter` from any source of Unicode strings.
+
+[h3 From Code Point]
+The static `unicode_string_adapter::from_codepoint()` function takes a begin and end code point iterator and
+constructs a new `unicode_string_adapter` that stores the given code points under the appropriate Unicode encoding.
+
+``
+    typedef unicode_string_adapter<std::string>     u8_string;
+
+    std::vector<codepoint_type> codepoints = get_codepoints_from_data_source();
+
+    u8_string my_encoded_string = u8_string::from_codepoints(codepoints.begin(), codepoints.end());
+``
+
+[h3 From Code Unit]
+Sometimes it is desirable to convert encoded form of some other Unicode string types into `unicode_string_adapter` 
+that wraps a different raw string type. The `unicode_string_adapter::from_codeunits()` helper function allows direct 
+conversion in encoded form without having to decode the source string and re-encode to the string adapter again. 
+However it is assumed that the caller of this helper function have the source string encoded in the same encoding 
+as the `unicode_string_adapter`, otherwise the resulting string would produce malformed content.
+
+Below is an example of a terminal application that expects UTF-16 encoded string from stdin.
+
+``
+    typedef unicode_string_adapter< std::basic_string<char16_t> >   u16_string;
+
+    // Wraps std::cin inside input stream iterator so that we can
+    // iterator over the code units.
+    std::istream_iterator<char16_t> iit(std::cin);
+    std::istream_iterator<char16_t> eos;
+
+    // Directly copy the UTF-16 code units into the Unicode string adapter
+    // without having to go through manual decoding. Any encoding error
+    // will be handled by the string adapter
+    u16_string my_string = u16_string::from_codeunits(iit, eos);
+``
+
+[endsect]
+
+[section:concat String Concatenation]
+
+Concatenation of two `unicode_string_adapater` is straightforward through `operator +()`. It is possible to 
+concatenate strings of different `unicode_string_adapter` template instances, in which case the type of 
+resulting string would follow the type of the first operand.
+
+``
+    unicode_string_adapter< std::string > first_string = USTR("世界");
+    unicode_string_adapter< std::vector< char16_t > second_string = USTR("你好");
+
+    // The return type is the same type as the first operand
+    unicode_string_adapter< std::string > new_string = first_string + second_string;
+
+    // However with the help of automatic conversion, it is possible to specify a different
+    // template instance from the two operands. A run time conversion will take place in this case.
+    unicode_string_adapter< std::basic_string<wchar_t> >
+    another_string = first_string + second_string;
+``
+
+Notice however that because `unicode_string_adapter` is immutable, a new copy of string is always be created during 
+concatenation. There is also no `operator +=()` available, so append operation is not allowed.
+
+[endsect]
+
+[section:iterator Iterating Through Code Points]
+
+`unicode_string_adapter` provides uniform access to code points stored in strings encoded in any Unicode encoding. 
+The access is straight forward by simply calling `begin()` and `end()` to retrieve the code point iterators. The 
+`value_type` for the iterator is `const codepoint_type` when derefenced via `operator *()`. The code point iterator 
+will perform the decoding operating behind the scene using the appropriate decoding engine, so the user do not need 
+to know which encoding the Unicode string is encoded in.
+
+``
+    unicode_string_adapter< std::string > my_string = USTR("世界你好");
+
+    typename unicode_string_adapter< std::string >::iterator
+    it = my_string.begin();
+
+    while(it != my_string.end()) {
+        // print the decoded code point value onto the terminal
+        std::cout << *it;
+    }
+
+    std::vector<codepoint_type> decoded;
+
+    // Code point iterators work with STL algorithms
+    // In this case we are copying the decoded code points into 
+    // a vector of code points.
+    std::copy(my_string.begin(), my_string.end(), std::back_inserter(decoded));
+``
+
+`unicode_string_adapter` does not provide direct way to access a string's code units in encoded form. This is 
+because the whole purpose of this class is to hide the abstraction so that developer don't have to deal with 
+strings of different encodings. Although code unit iterators can typically be obtained by calling the raw string's 
+`begin()` method via `operator ->()`, it is strongly not recommended as doing so would make the code much less 
+portable.
+
+[endsect]
+
+[endsect]
+
+
+[section:unicode_string_adapter_builder Unicode String Adapter Builder]
+
+Even though the nature of immutable string makes `unicode_string_adapter` much more efficient than most other mutable 
+string types including std::string in C++11, certain mutable string operations are still unavoidable in some cases 
+and there needs to be a way to construct mutable strings. Boost.Ustr solves the dilemma by introducing 
+`unicode_string_adapter_builder` to complement the lack of mutability in `unicode_string_adapter`.
+
+`unicode_string_adapter_builder` has the same template parameters as `unicode_string_adapter` and it also wraps a 
+raw string type to perform the actual mutable string operations. However there is an important distiction of it from 
+`unicode_string_adapter`: `unicode_string_adapter_builder` is a write only class, therefore it is not possible to 
+read any code points or code units stored in it. To retrieve what have been stored in the adapter builder, developer 
+must first call the `unicode_string_adapter_builder::freeze()` method which will freeze the string and return a 
+`unicode_string_adapter` object, then only perform read operations on the immutable string adapter. This design 
+forces Boost.Ustr users to choose from either read or write operation one at a time, leading to (what the author 
+believes to be) a better good design.
+
+Other than the limitation to write-only operations, `unicode_string_adapter_builder` is also non-copyable. In C++11 
+`unicode_string_adapter_builder` would behave similar to `std::unique_ptr` and is only movable through rvalue 
+reference. At the moment there is no support for move constructor on compilers that do not support C++11, making 
+the mutable adapter builder non-transferrable unless being freezed first.
+
+``
+    unicode_string_adapter_builder< std::string > my_buffer;
+
+    // The append() method accepts a code point and encode 
+    // it with targetted encoding and then store it in the 
+    // raw string buffer.
+    // The buffer now contains a single code point value of
+    // the character '世'
+    my_buffer.append(0x4E16);
+
+    // The buffer appends the code point value of '界' 
+    // and it now contains two code points forming the 
+    // Unicode string "世界"
+    my_buffer.append(0x754C);
+
+    // A predefined Unicode string literal that contains the same word
+    unicode_string_adapter< std::string > original_string = USTR("世界");
+
+    // Does not compile: unicode_string_adapter_builder does not 
+    // support operator ==() and other read operations
+    // assert(my_buffer == original_string);
+    unicode_string_adapter< std::string > freezed_string = my_buffer.freeze();
+
+    // OK: Freezed string becomes immutable and the const string type 
+    // allows read but not write operation
+    assert(freezed_string == original_string);
+
+    // Compilable: The buffer is freezed first so is the immutable string adapter 
+    // being used to compared. Notice the inequality comparison (!=), indicating that 
+    // after the previous call to freeze() at the line above, the buffer content is 
+    // emptied and thus is no longer the same as the original string.
+    // IMPORTANT: Once freezed the original buffer will be flushed and no longer 
+    // contain the previously inserted content. DO NOT call freeze() like shown here 
+    // because you will lose the buffer content by not assigning the freezed object
+    // to a variable.
+    assert(my_buffer.freeze() != original_string);
+
+
+    // Does not compile: unicode_string_adapter_builder is non-copyable
+    // unicode_string_adapter_builder< std::string > buffer_copy = my_buffer;
+
+    // OK in C++11: move semantics is supported based on platform availability
+    unicode_string_adapter_builder< std::string > buffer_copy = std::move(my_buffer);
+
+    // Only compilable in C++11. In C++03 the return value still requires
+    // copy construction.
+    unicode_string_adapter_builder< std::string > my_function() {
+        ...
+    }
+
+    // Better do it this way: by passing the buffer as reference to functions
+    void my_alternative_function(unicode_string_adapter_builder< std::string>& str) {
+        ...
+    }
+``
+
+[section:output_iterator Output Iterator]
+
+The `begin()` method of `unicode_string_adapter_builder` returns a append-only output iterator. 
+The iterator will append any code point values it receives through `operator =()` to the end of 
+the underlying buffer. This is useful for building Unicode strings through STL algorithms. 
+Notice however that the output iterator does not support `operator ==()`, which is a read operation.
+
+``
+    unicode_string_adapter_builder< std::string > my_buffer;
+
+    typename unicode_string_adapter_builder< std::string >::iterator
+    out = my_buffer.begin();
+
+    // Same as my_buffer.append(0x4E16);
+    *out++ = 0x4E16;
+    *out++ = 0x754C;
+
+    // Does not compile: output iterator does not support operator ==()
+    // assert(*out == 0x754C);
+
+    // Hypothetical function that retrieves code points from data source
+    std::vector<codepoint_type> codepoints = get_codepoints_from_data_source();
+
+    // We can append all the code points to the end of the buffer
+    // using STL algorithms
+    std::copy(codepoints.begin(), codepoints.end(), my_buffer.begin());
+``
+
+[endsect]
+
+[section:append_codeunit Appending Code Units]
+
+There are times where appending Unicode characters in encoded form is desirable, especially for cases like 
+building Unicode strings from sources that contain already encoded strings such as through the network. 
+To address such issue, there is a method `unicode_string_adapter_builder::append_codeunit` available to 
+directly append encoded code units into the buffer. In this case the user is expected to make sure that the 
+source encoding is the same as the buffer encoding, and also the encoding correctness of the source. If any 
+malformed code unit is inserted into the buffer, the sequence will be detected and replaced according to the 
+encoding policy of the string adapter.
+
+(Coming soon) There is also a code unit output iterator available by calling the 
+`unicode_string_adapter_builder::codeunit_begin()` method. This may be useful to be used together with 
+STL algorithms.
+
+``
+    // Char array with "世界" encoded in UTF-8
+    const char encoded[] = { '\xE4', '\xB8', '\x96', '\xE7', '\x95', '\x8C' }
+
+    unicode_string_adapter_builder< std::string > my_buffer;
+
+    // Directly appended encoded code units. Developer must personally make sure 
+    // that both encodings are the same.
+    my_buffer.append_codeunit('\xE4');
+
+    // Use STL algorithm to directly copy the encoded code units into the buffer
+    // This must be done carefully or malformed string will be constructed
+    std::copy(encoded+1, encoded+6, my_buffer.codeunit_begin());
+``
+
+[endsect]
+
+[endsect]
+
+
+[section:examples Examples]
+
+[endsect]
+
+[xinclude autodoc.xml]

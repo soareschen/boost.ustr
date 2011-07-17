@@ -1,0 +1,63 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>Motivation</title>
+<link rel="stylesheet" href="../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<link rel="home" href="../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
+<link rel="up" href="../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
+<link rel="prev" href="../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
+<link rel="next" href="unicode_string_adapter.html" title="Unicode String Adapter">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../index.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="unicode_string_adapter.html"><img src="../images/next.png" alt="Next"></a>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="ustr.motivation"></a><a class="link" href="motivation.html" title="Motivation">Motivation</a>
+</h2></div></div></div>
+<p>
+      The main reason that Boost.Ustr is developed is because current raw string
+      types such as std::string requires developers to make assumption on the encoding
+      of the string content, such as UTF-8 for std::string. This creates inconsistency
+      when a string passed to library APIs has different encoding from the library
+      expects. The problem mainly arise because there are a small minority of developers
+      who use different encoding for the same string type.
+    </p>
+<p>
+      Various proposals have been made to solve this issue, but most proposals are
+      mainly focused on creating new Unicode string classes that enforce encoding
+      correctness. However the Boost community were reluctant on introducing yet
+      another string class into the C++ ecosystem. This is because std::basic_string
+      has already been widely adopted by the C++ community and the switching cost
+      is belived to be too high for the new string class to be adopted widely. Furthermore,
+      most of the discussions were focusing mainly on the feasibility of creating
+      another string class rather than bringing encoding awareness into strings.
+    </p>
+<p>
+      Because string and encoding are two separate issues, it is preferable that
+      string classes should be act as raw character containers and leave the encoding
+      issues to a higher layer of abstraction. Using this approach, we create <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code> as a generic adapter
+      for arbitrary string classes to provide encoding awareness through additional
+      layer. This is better than creating new Unicode string classes because developers
+      have the freedom of continue using their own favorite string classes in addition
+      to benefiting from the encoding awareness.
+    </p>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright &#169; 2011 Soares Chen Ruo Fei<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="../index.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="unicode_string_adapter.html"><img src="../images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

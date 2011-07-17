@@ -1,0 +1,212 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>Unicode String Adapter Builder</title>
+<link rel="stylesheet" href="../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<link rel="home" href="../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
+<link rel="up" href="../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
+<link rel="prev" href="unicode_string_adapter.html" title="Unicode String Adapter">
+<link rel="next" href="examples.html" title="Examples">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="unicode_string_adapter.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="examples.html"><img src="../images/next.png" alt="Next"></a>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="ustr.unicode_string_adapter_builder"></a><a class="link" href="unicode_string_adapter_builder.html" title="Unicode String Adapter Builder">Unicode String Adapter
+    Builder</a>
+</h2></div></div></div>
+<div class="toc"><dl>
+<dt><span class="section"><a href="unicode_string_adapter_builder.html#ustr.unicode_string_adapter_builder.output_iterator">Output
+      Iterator</a></span></dt>
+<dt><span class="section"><a href="unicode_string_adapter_builder.html#ustr.unicode_string_adapter_builder.append_codeunit">Appending
+      Code Units</a></span></dt>
+</dl></div>
+<p>
+      Even though the nature of immutable string makes <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code>
+      much more efficient than most other mutable string types including std::string
+      in C++11, certain mutable string operations are still unavoidable in some cases
+      and there needs to be a way to construct mutable strings. Boost.Ustr solves
+      the dilemma by introducing <code class="computeroutput"><span class="identifier">unicode_string_adapter_builder</span></code>
+      to complement the lack of mutability in <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code>.
+    </p>
+<p>
+      <code class="computeroutput"><span class="identifier">unicode_string_adapter_builder</span></code>
+      has the same template parameters as <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code>
+      and it also wraps a raw string type to perform the actual mutable string operations.
+      However there is an important distiction of it from <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code>:
+      <code class="computeroutput"><span class="identifier">unicode_string_adapter_builder</span></code>
+      is a write only class, therefore it is not possible to read any code points
+      or code units stored in it. To retrieve what have been stored in the adapter
+      builder, developer must first call the <code class="computeroutput"><span class="identifier">unicode_string_adapter_builder</span><span class="special">::</span><span class="identifier">freeze</span><span class="special">()</span></code> method which will freeze the string and return
+      a <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code> object,
+      then only perform read operations on the immutable string adapter. This design
+      forces Boost.Ustr users to choose from either read or write operation one at
+      a time, leading to (what the author believes to be) a better good design.
+    </p>
+<p>
+      Other than the limitation to write-only operations, <code class="computeroutput"><span class="identifier">unicode_string_adapter_builder</span></code>
+      is also non-copyable. In C++11 <code class="computeroutput"><span class="identifier">unicode_string_adapter_builder</span></code>
+      would behave similar to <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">unique_ptr</span></code>
+      and is only movable through rvalue reference. At the moment there is no support
+      for move constructor on compilers that do not support C++11, making the mutable
+      adapter builder non-transferrable unless being freezed first.
+    </p>
+<p>
+      
+</p>
+<pre class="programlisting"><span class="identifier">unicode_string_adapter_builder</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">my_buffer</span><span class="special">;</span>
+
+<span class="comment">// The append() method accepts a code point and encode 
+</span><span class="comment">// it with targetted encoding and then store it in the 
+</span><span class="comment">// raw string buffer.
+</span><span class="comment">// The buffer now contains a single code point value of
+</span><span class="comment">// the character '&#19990;'
+</span><span class="identifier">my_buffer</span><span class="special">.</span><span class="identifier">append</span><span class="special">(</span><span class="number">0x4E16</span><span class="special">);</span>
+
+<span class="comment">// The buffer appends the code point value of '&#30028;' 
+</span><span class="comment">// and it now contains two code points forming the 
+</span><span class="comment">// Unicode string "&#19990;&#30028;"
+</span><span class="identifier">my_buffer</span><span class="special">.</span><span class="identifier">append</span><span class="special">(</span><span class="number">0x754C</span><span class="special">);</span>
+
+<span class="comment">// A predefined Unicode string literal that contains the same word
+</span><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">original_string</span> <span class="special">=</span> <span class="identifier">USTR</span><span class="special">(</span><span class="string">"&#19990;&#30028;"</span><span class="special">);</span>
+
+<span class="comment">// Does not compile: unicode_string_adapter_builder does not 
+</span><span class="comment">// support operator ==() and other read operations
+</span><span class="comment">// assert(my_buffer == original_string);
+</span><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">freezed_string</span> <span class="special">=</span> <span class="identifier">my_buffer</span><span class="special">.</span><span class="identifier">freeze</span><span class="special">();</span>
+
+<span class="comment">// OK: Freezed string becomes immutable and the const string type 
+</span><span class="comment">// allows read but not write operation
+</span><span class="identifier">assert</span><span class="special">(</span><span class="identifier">freezed_string</span> <span class="special">==</span> <span class="identifier">original_string</span><span class="special">);</span>
+
+<span class="comment">// Compilable: The buffer is freezed first so is the immutable string adapter 
+</span><span class="comment">// being used to compared. Notice the inequality comparison (!=), indicating that 
+</span><span class="comment">// after the previous call to freeze() at the line above, the buffer content is 
+</span><span class="comment">// emptied and thus is no longer the same as the original string.
+</span><span class="comment">// IMPORTANT: Once freezed the original buffer will be flushed and no longer 
+</span><span class="comment">// contain the previously inserted content. DO NOT call freeze() like shown here 
+</span><span class="comment">// because you will lose the buffer content by not assigning the freezed object
+</span><span class="comment">// to a variable.
+</span><span class="identifier">assert</span><span class="special">(</span><span class="identifier">my_buffer</span><span class="special">.</span><span class="identifier">freeze</span><span class="special">()</span> <span class="special">!=</span> <span class="identifier">original_string</span><span class="special">);</span>
+
+
+<span class="comment">// Does not compile: unicode_string_adapter_builder is non-copyable
+</span><span class="comment">// unicode_string_adapter_builder&lt; std::string &gt; buffer_copy = my_buffer;
+</span>
+<span class="comment">// OK in C++11: move semantics is supported based on platform availability
+</span><span class="identifier">unicode_string_adapter_builder</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">buffer_copy</span> <span class="special">=</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">move</span><span class="special">(</span><span class="identifier">my_buffer</span><span class="special">);</span>
+
+<span class="comment">// Only compilable in C++11. In C++03 the return value still requires
+</span><span class="comment">// copy construction.
+</span><span class="identifier">unicode_string_adapter_builder</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">my_function</span><span class="special">()</span> <span class="special">{</span>
+    <span class="special">...</span>
+<span class="special">}</span>
+
+<span class="comment">// Better do it this way: by passing the buffer as reference to functions
+</span><span class="keyword">void</span> <span class="identifier">my_alternative_function</span><span class="special">(</span><span class="identifier">unicode_string_adapter_builder</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&gt;&amp;</span> <span class="identifier">str</span><span class="special">)</span> <span class="special">{</span>
+    <span class="special">...</span>
+<span class="special">}</span>
+</pre>
+<p>
+    </p>
+<div class="section">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="ustr.unicode_string_adapter_builder.output_iterator"></a><a class="link" href="unicode_string_adapter_builder.html#ustr.unicode_string_adapter_builder.output_iterator" title="Output Iterator">Output
+      Iterator</a>
+</h3></div></div></div>
+<p>
+        The <code class="computeroutput"><span class="identifier">begin</span><span class="special">()</span></code>
+        method of <code class="computeroutput"><span class="identifier">unicode_string_adapter_builder</span></code>
+        returns a append-only output iterator. The iterator will append any code
+        point values it receives through <code class="computeroutput"><span class="keyword">operator</span>
+        <span class="special">=()</span></code> to the end of the underlying buffer.
+        This is useful for building Unicode strings through STL algorithms. Notice
+        however that the output iterator does not support <code class="computeroutput"><span class="keyword">operator</span>
+        <span class="special">==()</span></code>, which is a read operation.
+      </p>
+<p>
+        
+</p>
+<pre class="programlisting"><span class="identifier">unicode_string_adapter_builder</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">my_buffer</span><span class="special">;</span>
+
+<span class="keyword">typename</span> <span class="identifier">unicode_string_adapter_builder</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;::</span><span class="identifier">iterator</span>
+<span class="identifier">out</span> <span class="special">=</span> <span class="identifier">my_buffer</span><span class="special">.</span><span class="identifier">begin</span><span class="special">();</span>
+
+<span class="comment">// Same as my_buffer.append(0x4E16);
+</span><span class="special">*</span><span class="identifier">out</span><span class="special">++</span> <span class="special">=</span> <span class="number">0x4E16</span><span class="special">;</span>
+<span class="special">*</span><span class="identifier">out</span><span class="special">++</span> <span class="special">=</span> <span class="number">0x754C</span><span class="special">;</span>
+
+<span class="comment">// Does not compile: output iterator does not support operator ==()
+</span><span class="comment">// assert(*out == 0x754C);
+</span>
+<span class="comment">// Hypothetical function that retrieves code points from data source
+</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="identifier">codepoint_type</span><span class="special">&gt;</span> <span class="identifier">codepoints</span> <span class="special">=</span> <span class="identifier">get_codepoints_from_data_source</span><span class="special">();</span>
+
+<span class="comment">// We can append all the code points to the end of the buffer
+</span><span class="comment">// using STL algorithms
+</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">copy</span><span class="special">(</span><span class="identifier">codepoints</span><span class="special">.</span><span class="identifier">begin</span><span class="special">(),</span> <span class="identifier">codepoints</span><span class="special">.</span><span class="identifier">end</span><span class="special">(),</span> <span class="identifier">my_buffer</span><span class="special">.</span><span class="identifier">begin</span><span class="special">());</span>
+</pre>
+<p>
+      </p>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="ustr.unicode_string_adapter_builder.append_codeunit"></a><a class="link" href="unicode_string_adapter_builder.html#ustr.unicode_string_adapter_builder.append_codeunit" title="Appending Code Units">Appending
+      Code Units</a>
+</h3></div></div></div>
+<p>
+        There are times where appending Unicode characters in encoded form is desirable,
+        especially for cases like building Unicode strings from sources that contain
+        already encoded strings such as through the network. To address such issue,
+        there is a method <code class="computeroutput"><span class="identifier">unicode_string_adapter_builder</span><span class="special">::</span><span class="identifier">append_codeunit</span></code>
+        available to directly append encoded code units into the buffer. In this
+        case the user is expected to make sure that the source encoding is the same
+        as the buffer encoding, and also the encoding correctness of the source.
+        If any malformed code unit is inserted into the buffer, the sequence will
+        be detected and replaced according to the encoding policy of the string adapter.
+      </p>
+<p>
+        (Coming soon) There is also a code unit output iterator available by calling
+        the <code class="computeroutput"><span class="identifier">unicode_string_adapter_builder</span><span class="special">::</span><span class="identifier">codeunit_begin</span><span class="special">()</span></code> method. This may be useful to be used together
+        with STL algorithms.
+      </p>
+<p>
+        
+</p>
+<pre class="programlisting"><span class="comment">// Char array with "&#19990;&#30028;" encoded in UTF-8
+</span><span class="keyword">const</span> <span class="keyword">char</span> <span class="identifier">encoded</span><span class="special">[]</span> <span class="special">=</span> <span class="special">{</span> <span class="char">'\xE4'</span><span class="special">,</span> <span class="char">'\xB8'</span><span class="special">,</span> <span class="char">'\x96'</span><span class="special">,</span> <span class="char">'\xE7'</span><span class="special">,</span> <span class="char">'\x95'</span><span class="special">,</span> <span class="char">'\x8C'</span> <span class="special">}</span>
+
+<span class="identifier">unicode_string_adapter_builder</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">my_buffer</span><span class="special">;</span>
+
+<span class="comment">// Directly appended encoded code units. Developer must personally make sure 
+</span><span class="comment">// that both encodings are the same.
+</span><span class="identifier">my_buffer</span><span class="special">.</span><span class="identifier">append_codeunit</span><span class="special">(</span><span class="char">'\xE4'</span><span class="special">);</span>
+
+<span class="comment">// Use STL algorithm to directly copy the encoded code units into the buffer
+</span><span class="comment">// This must be done carefully or malformed string will be constructed
+</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">copy</span><span class="special">(</span><span class="identifier">encoded</span><span class="special">+</span><span class="number">1</span><span class="special">,</span> <span class="identifier">encoded</span><span class="special">+</span><span class="number">6</span><span class="special">,</span> <span class="identifier">my_buffer</span><span class="special">.</span><span class="identifier">codeunit_begin</span><span class="special">());</span>
+</pre>
+<p>
+      </p>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright &#169; 2011 Soares Chen Ruo Fei<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="unicode_string_adapter.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="examples.html"><img src="../images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

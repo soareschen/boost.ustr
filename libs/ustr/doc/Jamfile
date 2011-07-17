@@ -1,0 +1,27 @@
+
+
+using quickbook ;
+using doxygen ;
+
+project boost/libs/ustr/doc 
+  : requirements
+    <doxygen:param>EXTRACT_ALL=YES
+    <doxygen:param>HIDE_UNDOC_MEMBERS=NO
+    <doxygen:param>EXTRACT_PRIVATE=NO
+    <doxygen:param>ENABLE_PREPROCESSING=YES
+    <doxygen:param>MACRO_EXPANSION=YES
+  ;
+
+boostbook quickbook
+  :
+    boost_ustr.qbk
+  :
+    <dependency>autodoc
+  ;
+
+doxygen autodoc
+  :
+    [ path.glob-tree ../../../boost/ustr : *.hpp : detail ]
+  :
+    <xsl:param>boost.doxygen.reftitle="Reference"
+  ;

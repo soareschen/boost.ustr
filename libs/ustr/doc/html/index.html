@@ -1,0 +1,174 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>Chapter&#160;1.&#160;Ustr 0.1</title>
+<link rel="stylesheet" href="boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<link rel="home" href="index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
+<link rel="next" href="ustr/motivation.html" title="Motivation">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"></td></tr></table>
+<hr>
+<div class="spirit-nav"><a accesskey="n" href="ustr/motivation.html"><img src="images/next.png" alt="Next"></a></div>
+<div class="chapter">
+<div class="titlepage"><div>
+<div><h2 class="title">
+<a name="ustr"></a>Chapter&#160;1.&#160;Ustr 0.1</h2></div>
+<div><div class="author"><h3 class="author">
+<span class="firstname">Chen Ruo Fei</span> <span class="surname">Soares</span>
+</h3></div></div>
+<div><p class="copyright">Copyright &#169; 2011 Soares Chen Ruo Fei</p></div>
+<div><div class="legalnotice">
+<a name="id597826"></a><p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></div>
+</div></div>
+<div class="toc">
+<p><b>Table of Contents</b></p>
+<dl>
+<dt><span class="section"><a href="index.html#ustr.introduction">Introduction</a></span></dt>
+<dd><dl><dt><span class="section"><a href="index.html#ustr.introduction.benefits">Benefits over Raw Strings</a></span></dt></dl></dd>
+<dt><span class="section"><a href="ustr/motivation.html">Motivation</a></span></dt>
+<dt><span class="section"><a href="ustr/unicode_string_adapter.html">Unicode String Adapter</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="ustr/unicode_string_adapter.html#ustr.unicode_string_adapter.helper_types">Helper Types</a></span></dt>
+<dt><span class="section"><a href="ustr/unicode_string_adapter.html#ustr.unicode_string_adapter.template">Template Instantiation</a></span></dt>
+<dt><span class="section"><a href="ustr/unicode_string_adapter.html#ustr.unicode_string_adapter.source_string">Unicode String
+      within Source Code</a></span></dt>
+<dt><span class="section"><a href="ustr/unicode_string_adapter.html#ustr.unicode_string_adapter.api">Unicode String Adapter
+      in Library APIs</a></span></dt>
+<dt><span class="section"><a href="ustr/unicode_string_adapter.html#ustr.unicode_string_adapter.raw_string">Obtaining and
+      Constructing From Raw String</a></span></dt>
+<dt><span class="section"><a href="ustr/unicode_string_adapter.html#ustr.unicode_string_adapter.building_strings">Building
+      Unicode Strings</a></span></dt>
+<dt><span class="section"><a href="ustr/unicode_string_adapter.html#ustr.unicode_string_adapter.concat">String Concatenation</a></span></dt>
+<dt><span class="section"><a href="ustr/unicode_string_adapter.html#ustr.unicode_string_adapter.iterator">Iterating Through
+      Code Points</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="ustr/unicode_string_adapter_builder.html">Unicode String Adapter
+    Builder</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="ustr/unicode_string_adapter_builder.html#ustr.unicode_string_adapter_builder.output_iterator">Output
+      Iterator</a></span></dt>
+<dt><span class="section"><a href="ustr/unicode_string_adapter_builder.html#ustr.unicode_string_adapter_builder.append_codeunit">Appending
+      Code Units</a></span></dt>
+</dl></dd>
+<dt><span class="section"><a href="ustr/examples.html">Examples</a></span></dt>
+<dt><span class="section"><a href="reference.html">Reference</a></span></dt>
+<dd><dl>
+<dt><span class="section"><a href="reference.html#header.boost.ustr.encoding_traits_hpp">Header &lt;boost/ustr/encoding_traits.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.ustr.policy_hpp">Header &lt;boost/ustr/policy.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.ustr.string_traits_hpp">Header &lt;boost/ustr/string_traits.hpp&gt;</a></span></dt>
+<dt><span class="section"><a href="reference.html#header.boost.ustr.unicode_string_adapter_hpp">Header &lt;boost/ustr/unicode_string_adapter.hpp&gt;</a></span></dt>
+</dl></dd>
+</dl>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="ustr.introduction"></a><a class="link" href="index.html#ustr.introduction" title="Introduction">Introduction</a>
+</h2></div></div></div>
+<div class="toc"><dl><dt><span class="section"><a href="index.html#ustr.introduction.benefits">Benefits over Raw Strings</a></span></dt></dl></div>
+<p>
+      Boost.Ustr provides a Unicode string adapter class that wraps traditional string
+      containers such as <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span></code> to attach Unicode encoding semantics
+      to it.
+    </p>
+<p>
+      The main class that is used in Boost.Ustr is <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code>
+      with the following template signature:
+    </p>
+<p>
+      
+</p>
+<pre class="programlisting"><span class="keyword">template</span> <span class="special">&lt;</span><span class="keyword">typename</span> <span class="identifier">StringT</span><span class="special">,</span> <span class="keyword">typename</span> <span class="identifier">StringTraits</span><span class="special">,</span> <span class="keyword">typename</span> <span class="identifier">EncodingTraits</span><span class="special">&gt;</span>
+<span class="keyword">class</span> <span class="identifier">unicode_string_adapter</span><span class="special">;</span>
+</pre>
+<p>
+    </p>
+<p>
+      where
+    </p>
+<div class="itemizedlist"><ul class="itemizedlist" type="disc">
+<li class="listitem">
+          <code class="computeroutput"><span class="identifier">StringT</span></code> is the raw string
+          type that will be wrapped.
+        </li>
+<li class="listitem">
+          <code class="computeroutput"><span class="identifier">StringTraits</span></code> is the facade
+          to the manipulation of the raw string.
+        </li>
+<li class="listitem">
+          <code class="computeroutput"><span class="identifier">EncodingTraits</span></code> implements
+          the encoding/decoding operations of the raw string content.
+        </li>
+</ul></div>
+<p>
+      Boost.Ustr has default <code class="computeroutput"><span class="identifier">StringTraits</span></code>
+      and <code class="computeroutput"><span class="identifier">EncodingTraits</span></code> for most
+      of the containers. So it is usually sufficient to supply just the raw string
+      type to the template. for example, a Unicode string adapter with std::string
+      as the raw string type would be instantiated as
+    </p>
+<p>
+      
+</p>
+<pre class="programlisting"><span class="keyword">class</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span>
+</pre>
+<p>
+    </p>
+<div class="section">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="ustr.introduction.benefits"></a><a class="link" href="index.html#ustr.introduction.benefits" title="Benefits over Raw Strings">Benefits over Raw Strings</a>
+</h3></div></div></div>
+<p>
+        There are several benefits to wrap raw string types within <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code> instead of using
+        the raw strings directly.
+      </p>
+<a name="ustr.introduction.benefits.code_point_level_access"></a><h4>
+<a name="id638105"></a>
+        <a class="link" href="index.html#ustr.introduction.benefits.code_point_level_access">Code Point
+        Level Access</a>
+      </h4>
+<p>
+        <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code> encapsulates
+        the encoding/decoding operations of code units of different Unicode encodings.
+        Instead it returns code point iterators in the <code class="computeroutput"><span class="identifier">begin</span><span class="special">()</span></code> and <code class="computeroutput"><span class="identifier">end</span><span class="special">()</span></code> methods so that developers do not have
+        to concern on which encoding the raw string is actually using.
+      </p>
+<a name="ustr.introduction.benefits.automatic_conversion_between_template_instances"></a><h4>
+<a name="id638159"></a>
+        <a class="link" href="index.html#ustr.introduction.benefits.automatic_conversion_between_template_instances">Automatic
+        Conversion Between Template Instances</a>
+      </h4>
+<p>
+        A template instance of <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code>
+        can be automatically converted to another template instance. This is useful
+        for cases such as when the developer uses strings with encoding different
+        from the encoding expected from library APIs.
+      </p>
+<a name="ustr.introduction.benefits.efficient_copy_with_immutable_string"></a><h4>
+<a name="id638189"></a>
+        <a class="link" href="index.html#ustr.introduction.benefits.efficient_copy_with_immutable_string">Efficient
+        Copy with Immutable String</a>
+      </h4>
+<p>
+        <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code> is
+        an immutable string class. Internally the raw string is stored on the heap
+        and uses smart pointer to share the raw string among different objects. This
+        gives more efficient copy operation that is faster than many raw string types
+        that perform deep copying, including std::string in C++11.
+      </p>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"><p><small>Last revised: July 17, 2011 at 19:38:19 GMT</small></p></td>
+<td align="right"><div class="copyright-footer"></div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav"><a accesskey="n" href="ustr/motivation.html"><img src="images/next.png" alt="Next"></a></div>
+</body>
+</html>

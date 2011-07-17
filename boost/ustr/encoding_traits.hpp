@@ -8,8 +8,8 @@
 
 #include <string>
 #include <iterator>
-#include <boost/ustr/incl.hpp>
 #include <boost/ustr/policy.hpp>
+#include <boost/ustr/detail/incl.hpp>
 #include <boost/ustr/detail/utf8.hpp>
 #include <boost/ustr/detail/utf16.hpp>
 

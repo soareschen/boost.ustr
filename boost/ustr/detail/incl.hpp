@@ -13,7 +13,6 @@
 #define BOOST_USTR_CPP0X
 #endif
 
-
 #ifdef BOOST_NO_CHAR16_T
     typedef boost::uint16_t     utf16_codeunit_type;
 #else
@@ -25,3 +24,18 @@
 #else
     typedef char32_t            codepoint_type;
 #endif
+
+#if (!defined(BOOST_NO_UNICODE_LITERALS) || defined(BOOST_USTR_CPP0X))
+#   define USTR_CHAR_TYPE char
+#   define USTR_RAW(str) u8##str
+#else
+#   ifdef BOOST_WINDOWS
+#       define USTR_CHAR_TYPE wchar_t
+#       define USTR_RAW(str) L##str
+#   else
+#       define USTR_CHAR_TYPE char
+#       define USTR_RAW(str) str
+#   endif
+#endif
+
+#define USTR_STRING_TYPE std::basic_string< USTR_CHAR_TYPE >
