@@ -7,9 +7,7 @@
 #include <string>
 #include <algorithm>
 #include <iterator>
-#include <iostream>
 #include <boost/static_assert.hpp>
-#include <boost/type_traits.hpp>
 #include <boost/concept_check.hpp>
 #include <boost/ustr/policy.hpp>
 #include <boost/ustr/string_traits.hpp>
@@ -97,8 +95,10 @@ class unicode_string_adapter
 
     typedef typename 
         encoding_traits::codepoint_iterator_type                    codepoint_iterator_type;
-    typedef typename 
-        std::back_insert_iterator<mutable_adapter_type>             codepoint_output_iterator_type;
+
+    typedef std::back_insert_iterator<mutable_adapter_type>         codepoint_output_iterator_type;
+    //typedef custom_insert_iterator<mutable_adapter_type, 
+    //        codeunit_append_inserter_traits<mutable_adapter_type> > codeunit_output_iterator_type;
         
     typedef typename
         string_traits::raw_char_type                                raw_char_type;
@@ -129,9 +129,11 @@ class unicode_string_adapter
                  == codeunit_size));
 
         mutable_adapter_type buffer;
-        while(begin != end) {
-            buffer.append_codeunit(*begin++);
-        }
+        //while(begin != end) {
+        //    buffer.append_codeunit(*begin++);
+        //}
+
+        std::copy(begin, end, buffer.codeunit_begin());
 
         return buffer.freeze();
     }
@@ -408,8 +410,10 @@ class unicode_string_adapter_builder
     typedef typename 
         encoding_traits::codepoint_iterator_type                    codepoint_iterator_type;
 
-    typedef typename 
-        std::back_insert_iterator<this_type>                        codepoint_output_iterator_type;
+    class codeunit_adapter_builder_proxy;
+    typedef std::back_insert_iterator<mutable_adapter_type>         codepoint_output_iterator_type;
+    typedef std::back_insert_iterator<
+        codeunit_adapter_builder_proxy>                             codeunit_output_iterator_type;
 
     // STL Container Boilerplate typedefs
     typedef std::allocator<codepoint_type>                          allocator_type;
@@ -469,6 +473,16 @@ class unicode_string_adapter_builder
         return codepoint_output_iterator_type(*this);
     }
 
+    codeunit_output_iterator_type codeunit_begin() {
+        /*
+         * We have to hack this so that the compiler thinks that the object *this is from 
+         * the builder proxy class so that it can call proxy methods and typedefs from that
+         * class instead.
+         */
+        return codeunit_output_iterator_type(
+                *reinterpret_cast<codeunit_adapter_builder_proxy*>(this));
+    }
+
     void append(const codepoint_type& codepoint) {
         append_codepoint(codepoint);
     }
@@ -509,6 +523,53 @@ class unicode_string_adapter_builder
         std::copy(str.begin(), str.end(), begin());
     }
 
+    /*
+     * This is a C++ hack to make the compiler "thinks" that unicode_string_adapter_builder's objects 
+     * are objects from another class, the codeunit_adapter_builder_proxy. This is so that the compiler 
+     * takes the typedefs of this builder proxy instead of the original builder class, because we want 
+     * to make the builder work with code units instead of code points.
+     *
+     * Because STL algorithms take the typedefs seriously and we can't typedef both code units and code 
+     * points as value_type, the only way to get around this restriction is to make this builder proxy 
+     * class and reinterpret_cast the *this pointer of the builder objects into builder proxy objects.
+     */
+    class codeunit_adapter_builder_proxy {
+      public:
+        // STL Container Boilerplate typedefs
+        typedef codeunit_type                               value_type;
+        typedef std::back_insert_iterator<
+            codeunit_adapter_builder_proxy>                 iterator;
+        typedef const iterator                              const_iterator;
+        typedef std::allocator<value_type>                  allocator_type;
+        typedef size_t                                      size_type;
+        typedef ptrdiff_t                                   difference_type;
+        typedef value_type&                                 reference;
+        typedef const value_type&                           const_reference;
+        typedef value_type*                                 pointer;
+        typedef const value_type*                           const_pointer;
+
+        /*
+         * std::back_insert_iterator will call the push_back() method of the container,
+         * but we want it to call append_codeunit(), so the hack here is to cast *this 
+         * back to the builder class and call the right method.
+         */
+        void push_back(const_reference codeunit) {
+            as_original()->append_codeunit(codeunit);
+        }
+
+        this_type* as_original() {
+            return reinterpret_cast<this_type*>(this);
+        }
+
+      private:
+        /*
+         * The default constructor is private and undefined so it is impossible to create
+         * actual objects of this class.
+         */
+        codeunit_adapter_builder_proxy();
+        codeunit_adapter_builder_proxy& operator =(const codeunit_adapter_builder_proxy&);
+    };
+
   private:
     unicode_string_adapter_builder(const this_type&);
     bool operator ==(const this_type&) const;
@@ -516,7 +577,6 @@ class unicode_string_adapter_builder
 
     mutable_strptr_type _buffer;
 };
-
 
 
 } // namespace ustr

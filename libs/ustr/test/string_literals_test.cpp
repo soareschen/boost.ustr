@@ -21,7 +21,7 @@ TEST(string_literals_test, source_encoding_correctness) {
             decoded_ + sizeof(decoded_) / sizeof(codepoint_type));
 
     //unicode_string_adapter<std::string> str = USTR("hello world!");
-    unicode_string_adapter< std::vector<char> > str = USTR("世界你好");
+    unicode_string_adapter< std::vector<codepoint_type> > str = USTR("世界你好");
 
     EXPECT_TRUE(std::equal(str.begin(), str.end(), decoded.begin()));
 }

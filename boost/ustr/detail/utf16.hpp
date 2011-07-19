@@ -149,4 +149,4 @@ class utf16_encoder {
 } // namespace utf16
 } // namespace encoding
 } // namespace ustr
-} // namesp
+} // namespace boost

@@ -23,6 +23,10 @@ using namespace boost::ustr;
 using namespace boost::ustr::encoding;
 using std::string;
 
+using boost::ustr::encoding::utf8::utf8_encoder;
+using boost::ustr::encoding::utf16::utf16_encoder;
+using boost::ustr::encoding::utf32::utf32_encoder;
+
 class u8_fixture {
   public:
     u8_fixture(const codepoint_type& decoded_, const string& encoded_) :

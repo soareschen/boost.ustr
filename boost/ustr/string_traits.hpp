@@ -12,7 +12,7 @@
 #include <memory>
 #include <utility>
 #include <algorithm>
-#include <boost/ustr/detail/codeunit_traits.hpp>
+#include <boost/ustr/detail/util.hpp>
 #include <boost/ustr/detail/incl.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -24,8 +24,7 @@ namespace ustr {
 template <typename StringT>
 class char_type { 
   public:
-    typedef typename
-        StringT::value_type     type;
+    typedef typename StringT::value_type        type;
 };
 
 template < typename CharT, typename CharTraits, typename Alloc >
@@ -64,7 +63,7 @@ class string_traits {
     typedef const string_type*                      const_raw_strptr_type;
 
 
-#ifdef BOOST_USTR_CPP0x
+#ifdef BOOST_USTR_CPP0X
     typedef std::shared_ptr<const string_type>      const_strptr_type;
     typedef std::unique_ptr<string_type>            mutable_strptr_type;
 #elif BOOST_HAS_TR1_SHARED_PTR
@@ -78,8 +77,8 @@ class string_traits {
     typedef typename
         string_type::const_iterator                 codeunit_iterator_type;
 
-    typedef typename
-        get_raw_char_type<codeunit_type>::type      raw_char_type;
+    typedef typename util::get_raw_char_type<
+        codeunit_type>::type                        raw_char_type;
     typedef std::basic_string<raw_char_type>        raw_string_type;
 
     static raw_strptr_type new_string(const string_type& str) {

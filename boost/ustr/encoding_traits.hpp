@@ -10,32 +10,10 @@
 #include <iterator>
 #include <boost/ustr/policy.hpp>
 #include <boost/ustr/detail/incl.hpp>
-#include <boost/ustr/detail/utf8.hpp>
-#include <boost/ustr/detail/utf16.hpp>
+#include <boost/ustr/detail/util.hpp>
 
 namespace boost { 
 namespace ustr {
-
-using boost::ustr::encoding::utf8::utf8_encoder;
-using boost::ustr::encoding::utf16::utf16_encoder;
-
-template <size_t codeunit_size, typename Policy>
-class encoding_engine { 
-
-};
-
-template <typename Policy>
-class encoding_engine<1, Policy> {
-  public:
-    typedef utf8_encoder<Policy>    type;
-};
-
-template <typename Policy>
-class encoding_engine<2, Policy> {
-  public:
-    typedef utf16_encoder<Policy>   type;
-};
-
 
 /*
  * UTF-8 Encoding Traits
@@ -57,7 +35,7 @@ class utf_encoding_traits {
     typedef typename
         string_traits::mutable_strptr_type              mutable_strptr_type;
 
-    typedef typename encoding_engine<
+    typedef typename util::encoding_engine<
         string_traits::codeunit_size, Policy >::type    encoder;
 
     class codepoint_iterator;
