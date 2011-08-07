@@ -3,7 +3,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
 <title>Unicode String Adapter</title>
 <link rel="stylesheet" href="../boostbook.css" type="text/css">
-<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
 <link rel="home" href="../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
 <link rel="up" href="../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
 <link rel="prev" href="motivation.html" title="Motivation">
@@ -94,14 +94,14 @@
 </p>
 <pre class="programlisting"><span class="keyword">using</span> <span class="special">::</span><span class="identifier">boost</span><span class="special">::</span><span class="identifier">ustr</span><span class="special">::</span><span class="identifier">unicode_string_adapter</span><span class="special">;</span>
 
-<span class="comment">// UTF-16 encoding string with std::basic_string as raw container
-</span><span class="keyword">class</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">basic_string</span><span class="special">&lt;</span><span class="identifier">char16_t</span><span class="special">&gt;</span> <span class="special">&gt;</span> 
+<span class="comment">// UTF-16 encoding string with std::basic_string as raw container</span>
+<span class="keyword">class</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">basic_string</span><span class="special">&lt;</span><span class="identifier">char16_t</span><span class="special">&gt;</span> <span class="special">&gt;</span> 
 
-<span class="comment">// UTF-8 encoding string with std::vector as raw container
-</span><span class="keyword">class</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;</span> <span class="special">&gt;</span> 
+<span class="comment">// UTF-8 encoding string with std::vector as raw container</span>
+<span class="keyword">class</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;</span> <span class="special">&gt;</span> 
 
-<span class="comment">// UTF-32 encoding string with std::list as raw container
-</span><span class="keyword">class</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">list</span><span class="special">&lt;</span><span class="identifier">char32_t</span><span class="special">&gt;</span> <span class="special">&gt;</span> 
+<span class="comment">// UTF-32 encoding string with std::list as raw container</span>
+<span class="keyword">class</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">list</span><span class="special">&lt;</span><span class="identifier">char32_t</span><span class="special">&gt;</span> <span class="special">&gt;</span> 
 </pre>
 <p>
       </p>
@@ -138,15 +138,15 @@
 <p>
         
 </p>
-<pre class="programlisting"><span class="comment">// String adapter with custom raw string and custom encoding
-</span><span class="keyword">class</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span>
+<pre class="programlisting"><span class="comment">// String adapter with custom raw string and custom encoding</span>
+<span class="keyword">class</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span>
     <span class="identifier">stl</span><span class="special">::</span><span class="identifier">rope</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;,</span>
 
-    <span class="comment">// custom string traits that would use rope's fast concatenation API.
-</span>    <span class="identifier">rope_string_traits</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;,</span> 
+    <span class="comment">// custom string traits that would use rope's fast concatenation API.</span>
+    <span class="identifier">rope_string_traits</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;,</span> 
 
-    <span class="comment">// custom non-Unicode encoding that "pretends" to be Unicode encoding
-</span>    <span class="identifier">shift_jis_encoding_traits</span><span class="special">&lt;</span> <span class="identifier">rope_string_traits</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;</span> <span class="special">&gt;</span>
+    <span class="comment">// custom non-Unicode encoding that "pretends" to be Unicode encoding</span>
+    <span class="identifier">shift_jis_encoding_traits</span><span class="special">&lt;</span> <span class="identifier">rope_string_traits</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;</span> <span class="special">&gt;</span>
 <span class="special">&gt;;</span>
 </pre>
 <p>
@@ -197,8 +197,8 @@
 <p>
         
 </p>
-<pre class="programlisting"><span class="comment">// After expansion of USTR() macro
-</span><span class="keyword">static</span> <span class="keyword">const</span> <span class="identifier">unicode_string_adapater</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span>
+<pre class="programlisting"><span class="comment">// After expansion of USTR() macro</span>
+<span class="keyword">static</span> <span class="keyword">const</span> <span class="identifier">unicode_string_adapater</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span>
 <span class="identifier">my_string</span> <span class="special">=</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">basic_string</span><span class="special">&lt;</span><span class="keyword">wchar_t</span><span class="special">&gt;</span> <span class="special">&gt;(</span> <span class="identifier">L</span><span class="string">"&#19990;&#30028;&#20320;&#22909;"</span> <span class="special">);</span>
 </pre>
 <p>
@@ -230,15 +230,15 @@
 <p>
         
 </p>
-<pre class="programlisting"><span class="comment">// Won't compile: No appropriate constructor from const char*
-</span><span class="comment">// unicode_string_adapter&lt; std::vector&lt;char&gt; &gt; my_string = "Hello World!";
-</span>
-<span class="comment">// Will compile and also supports Unicode string literals across platforms
-</span><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;</span> <span class="special">&gt;</span> <span class="identifier">my_string</span> <span class="special">=</span> <span class="identifier">USTR</span><span class="special">(</span><span class="string">"Hello World!"</span><span class="special">);</span>
+<pre class="programlisting"><span class="comment">// Won't compile: No appropriate constructor from const char*</span>
+<span class="comment">// unicode_string_adapter&lt; std::vector&lt;char&gt; &gt; my_string = "Hello World!";</span>
 
-<span class="comment">// The complete expansion together with the std::string default constructor
-</span><span class="comment">// (Assuming it is on GCC-C++11 which supports UTF-8 string literal.
-</span><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;</span> <span class="special">&gt;</span>
+<span class="comment">// Will compile and also supports Unicode string literals across platforms</span>
+<span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;</span> <span class="special">&gt;</span> <span class="identifier">my_string</span> <span class="special">=</span> <span class="identifier">USTR</span><span class="special">(</span><span class="string">"Hello World!"</span><span class="special">);</span>
+
+<span class="comment">// The complete expansion together with the std::string default constructor</span>
+<span class="comment">// (Assuming it is on GCC-C++11 which supports UTF-8 string literal.</span>
+<span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;</span> <span class="special">&gt;</span>
 <span class="identifier">my_string</span> <span class="special">=</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;(</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">(</span><span class="identifier">u8</span><span class="string">"Hello World!"</span><span class="special">)</span> <span class="special">);</span>
 </pre>
 <p>
@@ -300,18 +300,18 @@
 <p>
         
 </p>
-<pre class="programlisting"><span class="comment">// Alternative version of the example above
-</span><span class="keyword">void</span> <span class="identifier">my_alt_library_function</span><span class="special">(</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">str</span> <span class="special">);</span>
+<pre class="programlisting"><span class="comment">// Alternative version of the example above</span>
+<span class="keyword">void</span> <span class="identifier">my_alt_library_function</span><span class="special">(</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">str</span> <span class="special">);</span>
 
 <span class="keyword">class</span> <span class="identifier">my_library_class</span> <span class="special">{</span>
     <span class="special">...</span>
-    <span class="comment">// Virtual functions cannot be templated
-</span>    <span class="keyword">virtual</span> <span class="keyword">void</span> <span class="identifier">my_member_library_function</span><span class="special">(</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">str</span> <span class="special">);</span>
+    <span class="comment">// Virtual functions cannot be templated</span>
+    <span class="keyword">virtual</span> <span class="keyword">void</span> <span class="identifier">my_member_library_function</span><span class="special">(</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">str</span> <span class="special">);</span>
     <span class="special">...</span>
 <span class="special">};</span>
 
-<span class="comment">// Library function that return but do not accept Unicode strings
-</span><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">my_returning_library_function</span><span class="special">(</span><span class="keyword">int</span> <span class="identifier">arg</span><span class="special">);</span>
+<span class="comment">// Library function that return but do not accept Unicode strings</span>
+<span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">my_returning_library_function</span><span class="special">(</span><span class="keyword">int</span> <span class="identifier">arg</span><span class="special">);</span>
 </pre>
 <p>
       </p>
@@ -326,20 +326,20 @@
 <p>
         
 </p>
-<pre class="programlisting"><span class="comment">// my_string is in UTF-16 encoding using std::vector as raw string type
-</span><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="identifier">char16_t</span><span class="special">&gt;</span> <span class="special">&gt;</span> <span class="identifier">my_string</span> <span class="special">=</span> <span class="identifier">USTR</span><span class="special">(</span><span class="string">"&#19990;&#30028;&#20320;&#22909;"</span><span class="special">);</span>
+<pre class="programlisting"><span class="comment">// my_string is in UTF-16 encoding using std::vector as raw string type</span>
+<span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="identifier">char16_t</span><span class="special">&gt;</span> <span class="special">&gt;</span> <span class="identifier">my_string</span> <span class="special">=</span> <span class="identifier">USTR</span><span class="special">(</span><span class="string">"&#19990;&#30028;&#20320;&#22909;"</span><span class="special">);</span>
 
-<span class="comment">// Call generic function that accepts all unicode_string_adapter: OK
-</span><span class="identifier">my_library_function</span><span class="special">(</span><span class="identifier">my_string</span><span class="special">);</span>
+<span class="comment">// Call generic function that accepts all unicode_string_adapter: OK</span>
+<span class="identifier">my_library_function</span><span class="special">(</span><span class="identifier">my_string</span><span class="special">);</span>
 
-<span class="comment">// Call function that accepts different unicode_string_adapter: OK
-</span><span class="identifier">my_alt_library_function</span><span class="special">(</span><span class="identifier">my_string</span><span class="special">);</span>
+<span class="comment">// Call function that accepts different unicode_string_adapter: OK</span>
+<span class="identifier">my_alt_library_function</span><span class="special">(</span><span class="identifier">my_string</span><span class="special">);</span>
 
 <span class="identifier">my_library_class</span> <span class="special">*</span><span class="identifier">my_object</span> <span class="special">=</span> <span class="keyword">new</span> <span class="identifier">my_library_class</span><span class="special">();</span>
 <span class="identifier">my_object</span><span class="special">-&gt;</span><span class="identifier">my_member_library_function</span><span class="special">(</span><span class="identifier">my_string</span><span class="special">);</span>
 
-<span class="comment">// Function returns UTF-8 string but the variable expects UTF-32 string: OK
-</span><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">basic_string</span><span class="special">&lt;</span><span class="identifier">char32_t</span><span class="special">&gt;</span> <span class="special">&gt;</span> 
+<span class="comment">// Function returns UTF-8 string but the variable expects UTF-32 string: OK</span>
+<span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">basic_string</span><span class="special">&lt;</span><span class="identifier">char32_t</span><span class="special">&gt;</span> <span class="special">&gt;</span> 
 <span class="identifier">my_other_string</span> <span class="special">=</span> <span class="identifier">my_returning_library_function</span><span class="special">(</span><span class="number">0</span><span class="special">);</span>
 </pre>
 <p>
@@ -366,22 +366,22 @@
 <p>
         
 </p>
-<pre class="programlisting"><span class="comment">// Legacy library API that accepts only raw std::string but correctly 
-</span><span class="comment">// expects UTF-8 encoding
-</span><span class="keyword">void</span> <span class="identifier">my_legacy_function</span><span class="special">(</span><span class="keyword">const</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&amp;</span> <span class="identifier">str</span><span class="special">);</span>
+<pre class="programlisting"><span class="comment">// Legacy library API that accepts only raw std::string but correctly </span>
+<span class="comment">// expects UTF-8 encoding</span>
+<span class="keyword">void</span> <span class="identifier">my_legacy_function</span><span class="special">(</span><span class="keyword">const</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&amp;</span> <span class="identifier">str</span><span class="special">);</span>
 
 <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">my_string</span> <span class="special">=</span> <span class="identifier">USTR</span><span class="special">(</span><span class="string">"&#19990;&#30028;&#20320;&#22909;"</span><span class="special">);</span>
 
-<span class="comment">// A local copy operation is performed to copy the string content
-</span><span class="comment">// from the heap to the stack. This might get expensive if done too much.
-</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="identifier">my_raw_string</span> <span class="special">=</span> <span class="special">*</span><span class="identifier">my_string</span><span class="special">;</span>
+<span class="comment">// A local copy operation is performed to copy the string content</span>
+<span class="comment">// from the heap to the stack. This might get expensive if done too much.</span>
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="identifier">my_raw_string</span> <span class="special">=</span> <span class="special">*</span><span class="identifier">my_string</span><span class="special">;</span>
 
-<span class="comment">// Because the function accepts const reference, no extra copying is needed
-</span><span class="identifier">my_legacy_function</span><span class="special">(*</span><span class="identifier">my_string</span><span class="special">);</span>
+<span class="comment">// Because the function accepts const reference, no extra copying is needed</span>
+<span class="identifier">my_legacy_function</span><span class="special">(*</span><span class="identifier">my_string</span><span class="special">);</span>
 
-<span class="comment">// Calls std::string::begin(). It returns the raw code unit iterator
-</span><span class="comment">// instead of the string adapter's code point iterator
-</span><span class="keyword">typename</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">::</span><span class="identifier">const_iterator</span> <span class="identifier">it</span> <span class="special">=</span> <span class="identifier">my_string</span><span class="special">-&gt;</span><span class="identifier">begin</span><span class="special">();</span>
+<span class="comment">// Calls std::string::begin(). It returns the raw code unit iterator</span>
+<span class="comment">// instead of the string adapter's code point iterator</span>
+<span class="keyword">typename</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">::</span><span class="identifier">const_iterator</span> <span class="identifier">it</span> <span class="special">=</span> <span class="identifier">my_string</span><span class="special">-&gt;</span><span class="identifier">begin</span><span class="special">();</span>
 </pre>
 <p>
       </p>
@@ -406,28 +406,28 @@
 <p>
         
 </p>
-<pre class="programlisting"><span class="comment">// It is however not portable to construct Unicode string literals 
-</span><span class="comment">// in this way, so we use English here.
-</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="identifier">my_raw_string</span> <span class="special">=</span> <span class="string">"Hello World!"</span><span class="special">;</span>
+<pre class="programlisting"><span class="comment">// It is however not portable to construct Unicode string literals </span>
+<span class="comment">// in this way, so we use English here.</span>
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="identifier">my_raw_string</span> <span class="special">=</span> <span class="string">"Hello World!"</span><span class="special">;</span>
 
-<span class="comment">// Explicit constructor is called
-</span><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&gt;</span> <span class="identifier">my_unicode_string</span><span class="special">(</span><span class="identifier">my_raw_string</span><span class="special">);</span>
+<span class="comment">// Explicit constructor is called</span>
+<span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&gt;</span> <span class="identifier">my_unicode_string</span><span class="special">(</span><span class="identifier">my_raw_string</span><span class="special">);</span>
 
 <span class="keyword">void</span> <span class="identifier">my_library_function</span><span class="special">(</span><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&gt;</span> <span class="identifier">arg</span><span class="special">);</span>
 
-<span class="comment">// When passed to functions that accept unicode_string_adapter,
-</span><span class="comment">// the constructor must be explicitly called
-</span><span class="identifier">my_library_function</span><span class="special">(</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&gt;(</span><span class="identifier">my_raw_string</span><span class="special">)</span> <span class="special">);</span>
+<span class="comment">// When passed to functions that accept unicode_string_adapter,</span>
+<span class="comment">// the constructor must be explicitly called</span>
+<span class="identifier">my_library_function</span><span class="special">(</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&gt;(</span><span class="identifier">my_raw_string</span><span class="special">)</span> <span class="special">);</span>
 
-<span class="comment">// This won't compile because there's no implicit conversion
-</span><span class="comment">// my_library_function(my_raw_string);
-</span>
+<span class="comment">// This won't compile because there's no implicit conversion</span>
+<span class="comment">// my_library_function(my_raw_string);</span>
+
 <span class="keyword">const</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">*</span><span class="identifier">my_string_ptr</span> <span class="special">=</span> <span class="keyword">new</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">(</span><span class="string">"Hello World!"</span><span class="special">);</span>
 
-<span class="comment">// No extra copying needed
-</span><span class="comment">// However be careful to not use the raw pointer anymore because
-</span><span class="comment">// the ownership has been transfered!
-</span><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&gt;</span> <span class="identifier">my_unicode_string2</span><span class="special">(</span><span class="identifier">my_string_ptr</span><span class="special">);</span>
+<span class="comment">// No extra copying needed</span>
+<span class="comment">// However be careful to not use the raw pointer anymore because</span>
+<span class="comment">// the ownership has been transfered!</span>
+<span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&gt;</span> <span class="identifier">my_unicode_string2</span><span class="special">(</span><span class="identifier">my_string_ptr</span><span class="special">);</span>
 </pre>
 <p>
       </p>
@@ -445,7 +445,7 @@
         any source of Unicode strings.
       </p>
 <a name="ustr.unicode_string_adapter.building_strings.from_code_point"></a><h4>
-<a name="id641400"></a>
+<a name="ustr.unicode_string_adapter.building_strings.from_code_point-heading"></a>
         <a class="link" href="unicode_string_adapter.html#ustr.unicode_string_adapter.building_strings.from_code_point">From
         Code Point</a>
       </h4>
@@ -466,7 +466,7 @@
 <p>
       </p>
 <a name="ustr.unicode_string_adapter.building_strings.from_code_unit"></a><h4>
-<a name="id641611"></a>
+<a name="ustr.unicode_string_adapter.building_strings.from_code_unit-heading"></a>
         <a class="link" href="unicode_string_adapter.html#ustr.unicode_string_adapter.building_strings.from_code_unit">From
         Code Unit</a>
       </h4>
@@ -489,15 +489,15 @@
 </p>
 <pre class="programlisting"><span class="keyword">typedef</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">basic_string</span><span class="special">&lt;</span><span class="identifier">char16_t</span><span class="special">&gt;</span> <span class="special">&gt;</span>   <span class="identifier">u16_string</span><span class="special">;</span>
 
-<span class="comment">// Wraps std::cin inside input stream iterator so that we can
-</span><span class="comment">// iterator over the code units.
-</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">istream_iterator</span><span class="special">&lt;</span><span class="identifier">char16_t</span><span class="special">&gt;</span> <span class="identifier">iit</span><span class="special">(</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">cin</span><span class="special">);</span>
+<span class="comment">// Wraps std::cin inside input stream iterator so that we can</span>
+<span class="comment">// iterator over the code units.</span>
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">istream_iterator</span><span class="special">&lt;</span><span class="identifier">char16_t</span><span class="special">&gt;</span> <span class="identifier">iit</span><span class="special">(</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">cin</span><span class="special">);</span>
 <span class="identifier">std</span><span class="special">::</span><span class="identifier">istream_iterator</span><span class="special">&lt;</span><span class="identifier">char16_t</span><span class="special">&gt;</span> <span class="identifier">eos</span><span class="special">;</span>
 
-<span class="comment">// Directly copy the UTF-16 code units into the Unicode string adapter
-</span><span class="comment">// without having to go through manual decoding. Any encoding error
-</span><span class="comment">// will be handled by the string adapter
-</span><span class="identifier">u16_string</span> <span class="identifier">my_string</span> <span class="special">=</span> <span class="identifier">u16_string</span><span class="special">::</span><span class="identifier">from_codeunits</span><span class="special">(</span><span class="identifier">iit</span><span class="special">,</span> <span class="identifier">eos</span><span class="special">);</span>
+<span class="comment">// Directly copy the UTF-16 code units into the Unicode string adapter</span>
+<span class="comment">// without having to go through manual decoding. Any encoding error</span>
+<span class="comment">// will be handled by the string adapter</span>
+<span class="identifier">u16_string</span> <span class="identifier">my_string</span> <span class="special">=</span> <span class="identifier">u16_string</span><span class="special">::</span><span class="identifier">from_codeunits</span><span class="special">(</span><span class="identifier">iit</span><span class="special">,</span> <span class="identifier">eos</span><span class="special">);</span>
 </pre>
 <p>
       </p>
@@ -520,12 +520,12 @@
 <pre class="programlisting"><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">first_string</span> <span class="special">=</span> <span class="identifier">USTR</span><span class="special">(</span><span class="string">"&#19990;&#30028;"</span><span class="special">);</span>
 <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span> <span class="identifier">char16_t</span> <span class="special">&gt;</span> <span class="identifier">second_string</span> <span class="special">=</span> <span class="identifier">USTR</span><span class="special">(</span><span class="string">"&#20320;&#22909;"</span><span class="special">);</span>
 
-<span class="comment">// The return type is the same type as the first operand
-</span><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">new_string</span> <span class="special">=</span> <span class="identifier">first_string</span> <span class="special">+</span> <span class="identifier">second_string</span><span class="special">;</span>
+<span class="comment">// The return type is the same type as the first operand</span>
+<span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">new_string</span> <span class="special">=</span> <span class="identifier">first_string</span> <span class="special">+</span> <span class="identifier">second_string</span><span class="special">;</span>
 
-<span class="comment">// However with the help of automatic conversion, it is possible to specify a different
-</span><span class="comment">// template instance from the two operands. A run time conversion will take place in this case.
-</span><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">basic_string</span><span class="special">&lt;</span><span class="keyword">wchar_t</span><span class="special">&gt;</span> <span class="special">&gt;</span>
+<span class="comment">// However with the help of automatic conversion, it is possible to specify a different</span>
+<span class="comment">// template instance from the two operands. A run time conversion will take place in this case.</span>
+<span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">basic_string</span><span class="special">&lt;</span><span class="keyword">wchar_t</span><span class="special">&gt;</span> <span class="special">&gt;</span>
 <span class="identifier">another_string</span> <span class="special">=</span> <span class="identifier">first_string</span> <span class="special">+</span> <span class="identifier">second_string</span><span class="special">;</span>
 </pre>
 <p>
@@ -562,16 +562,16 @@
 <span class="identifier">it</span> <span class="special">=</span> <span class="identifier">my_string</span><span class="special">.</span><span class="identifier">begin</span><span class="special">();</span>
 
 <span class="keyword">while</span><span class="special">(</span><span class="identifier">it</span> <span class="special">!=</span> <span class="identifier">my_string</span><span class="special">.</span><span class="identifier">end</span><span class="special">())</span> <span class="special">{</span>
-    <span class="comment">// print the decoded code point value onto the terminal
-</span>    <span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="special">*</span><span class="identifier">it</span><span class="special">;</span>
+    <span class="comment">// print the decoded code point value onto the terminal</span>
+    <span class="identifier">std</span><span class="special">::</span><span class="identifier">cout</span> <span class="special">&lt;&lt;</span> <span class="special">*</span><span class="identifier">it</span><span class="special">;</span>
 <span class="special">}</span>
 
 <span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span><span class="identifier">codepoint_type</span><span class="special">&gt;</span> <span class="identifier">decoded</span><span class="special">;</span>
 
-<span class="comment">// Code point iterators work with STL algorithms
-</span><span class="comment">// In this case we are copying the decoded code points into 
-</span><span class="comment">// a vector of code points.
-</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">copy</span><span class="special">(</span><span class="identifier">my_string</span><span class="special">.</span><span class="identifier">begin</span><span class="special">(),</span> <span class="identifier">my_string</span><span class="special">.</span><span class="identifier">end</span><span class="special">(),</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">back_inserter</span><span class="special">(</span><span class="identifier">decoded</span><span class="special">));</span>
+<span class="comment">// Code point iterators work with STL algorithms</span>
+<span class="comment">// In this case we are copying the decoded code points into </span>
+<span class="comment">// a vector of code points.</span>
+<span class="identifier">std</span><span class="special">::</span><span class="identifier">copy</span><span class="special">(</span><span class="identifier">my_string</span><span class="special">.</span><span class="identifier">begin</span><span class="special">(),</span> <span class="identifier">my_string</span><span class="special">.</span><span class="identifier">end</span><span class="special">(),</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">back_inserter</span><span class="special">(</span><span class="identifier">decoded</span><span class="special">));</span>
 </pre>
 <p>
       </p>

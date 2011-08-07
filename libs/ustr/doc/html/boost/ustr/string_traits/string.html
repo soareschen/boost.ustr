@@ -3,9 +3,9 @@
 <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
 <title>Struct string</title>
 <link rel="stylesheet" href="../../../boostbook.css" type="text/css">
-<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
 <link rel="home" href="../../../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
-<link rel="up" href="../string_traits.html#id651422" title="Description">
+<link rel="up" href="../string_traits.html#id658458" title="Description">
 <link rel="prev" href="raw_strptr.html" title="Struct raw_strptr">
 <link rel="next" href="../unicode_string_adapter.html" title="Class template unicode_string_adapter">
 </head>
@@ -13,7 +13,7 @@
 <table cellpadding="2" width="100%"><tr><td valign="top"></td></tr></table>
 <hr>
 <div class="spirit-nav">
-<a accesskey="p" href="raw_strptr.html"><img src="../../../images/prev.png" alt="Prev"></a><a accesskey="u" href="../string_traits.html#id651422"><img src="../../../images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../images/home.png" alt="Home"></a><a accesskey="n" href="../unicode_string_adapter.html"><img src="../../../images/next.png" alt="Next"></a>
+<a accesskey="p" href="raw_strptr.html"><img src="../../../images/prev.png" alt="Prev"></a><a accesskey="u" href="../string_traits.html#id658458"><img src="../../../images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../images/home.png" alt="Home"></a><a accesskey="n" href="../unicode_string_adapter.html"><img src="../../../images/next.png" alt="Next"></a>
 </div>
 <div class="refentry">
 <a name="boost.ustr.string_traits.string"></a><div class="titlepage"></div>
@@ -28,21 +28,21 @@
 
 <span class="keyword">struct</span> <a class="link" href="string.html" title="Struct string">string</a> <span class="special">{</span>
 
-  <span class="comment">// <a class="link" href="string.html#id284505-bb">public static functions</a></span>
-  <span class="keyword">static</span> <span class="keyword">bool</span> <a class="link" href="string.html#id284508-bb"><span class="identifier">equals</span></a><span class="special">(</span><span class="keyword">const</span> <span class="identifier">string_type</span> <span class="special">&amp;</span><span class="special">,</span> <span class="keyword">const</span> <span class="identifier">string_type</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
-  <span class="keyword">static</span> <span class="identifier">string_type</span> <a class="link" href="string.html#id284526-bb"><span class="identifier">from_raw_string</span></a><span class="special">(</span><span class="keyword">const</span> <span class="identifier">raw_string_type</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
-  <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> Iterator<span class="special">&gt;</span> <span class="keyword">static</span> <span class="identifier">string_type</span> <a class="link" href="string.html#id284538-bb"><span class="identifier">from_iter</span></a><span class="special">(</span><span class="identifier">Iterator</span><span class="special">,</span> <span class="identifier">Iterator</span><span class="special">)</span><span class="special">;</span>
+  <span class="comment">// <a class="link" href="string.html#id309095-bb">public static functions</a></span>
+  <span class="keyword">static</span> <span class="keyword">bool</span> <a class="link" href="string.html#id309098-bb"><span class="identifier">equals</span></a><span class="special">(</span><span class="keyword">const</span> <span class="identifier">string_type</span> <span class="special">&amp;</span><span class="special">,</span> <span class="keyword">const</span> <span class="identifier">string_type</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
+  <span class="keyword">static</span> <span class="identifier">string_type</span> <a class="link" href="string.html#id309116-bb"><span class="identifier">from_raw_string</span></a><span class="special">(</span><span class="keyword">const</span> <span class="identifier">raw_string_type</span> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
+  <span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> Iterator<span class="special">&gt;</span> <span class="keyword">static</span> <span class="identifier">string_type</span> <a class="link" href="string.html#id309128-bb"><span class="identifier">from_iter</span></a><span class="special">(</span><span class="identifier">Iterator</span><span class="special">,</span> <span class="identifier">Iterator</span><span class="special">)</span><span class="special">;</span>
 <span class="special">}</span><span class="special">;</span></pre></div>
 <div class="refsect1">
-<a name="id653407"></a><h2>Description</h2>
+<a name="id660442"></a><h2>Description</h2>
 <div class="refsect2">
-<a name="id653410"></a><h3>
-<a name="id284505-bb"></a><code class="computeroutput">string</code> public static functions</h3>
+<a name="id660445"></a><h3>
+<a name="id309095-bb"></a><code class="computeroutput">string</code> public static functions</h3>
 <div class="orderedlist"><ol class="orderedlist" type="1">
-<li class="listitem"><pre class="literallayout"><span class="keyword">static</span> <span class="keyword">bool</span> <a name="id284508-bb"></a><span class="identifier">equals</span><span class="special">(</span><span class="keyword">const</span> <span class="identifier">string_type</span> <span class="special">&amp;</span> str1<span class="special">,</span> <span class="keyword">const</span> <span class="identifier">string_type</span> <span class="special">&amp;</span> str2<span class="special">)</span><span class="special">;</span></pre></li>
-<li class="listitem"><pre class="literallayout"><span class="keyword">static</span> <span class="identifier">string_type</span> <a name="id284526-bb"></a><span class="identifier">from_raw_string</span><span class="special">(</span><span class="keyword">const</span> <span class="identifier">raw_string_type</span> <span class="special">&amp;</span> str<span class="special">)</span><span class="special">;</span></pre></li>
+<li class="listitem"><pre class="literallayout"><span class="keyword">static</span> <span class="keyword">bool</span> <a name="id309098-bb"></a><span class="identifier">equals</span><span class="special">(</span><span class="keyword">const</span> <span class="identifier">string_type</span> <span class="special">&amp;</span> str1<span class="special">,</span> <span class="keyword">const</span> <span class="identifier">string_type</span> <span class="special">&amp;</span> str2<span class="special">)</span><span class="special">;</span></pre></li>
+<li class="listitem"><pre class="literallayout"><span class="keyword">static</span> <span class="identifier">string_type</span> <a name="id309116-bb"></a><span class="identifier">from_raw_string</span><span class="special">(</span><span class="keyword">const</span> <span class="identifier">raw_string_type</span> <span class="special">&amp;</span> str<span class="special">)</span><span class="special">;</span></pre></li>
 <li class="listitem"><pre class="literallayout"><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> Iterator<span class="special">&gt;</span> 
-  <span class="keyword">static</span> <span class="identifier">string_type</span> <a name="id284538-bb"></a><span class="identifier">from_iter</span><span class="special">(</span><span class="identifier">Iterator</span> begin<span class="special">,</span> <span class="identifier">Iterator</span> end<span class="special">)</span><span class="special">;</span></pre></li>
+  <span class="keyword">static</span> <span class="identifier">string_type</span> <a name="id309128-bb"></a><span class="identifier">from_iter</span><span class="special">(</span><span class="identifier">Iterator</span> begin<span class="special">,</span> <span class="identifier">Iterator</span> end<span class="special">)</span><span class="special">;</span></pre></li>
 </ol></div>
 </div>
 </div>
@@ -57,7 +57,7 @@
 </tr></table>
 <hr>
 <div class="spirit-nav">
-<a accesskey="p" href="raw_strptr.html"><img src="../../../images/prev.png" alt="Prev"></a><a accesskey="u" href="../string_traits.html#id651422"><img src="../../../images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../images/home.png" alt="Home"></a><a accesskey="n" href="../unicode_string_adapter.html"><img src="../../../images/next.png" alt="Next"></a>
+<a accesskey="p" href="raw_strptr.html"><img src="../../../images/prev.png" alt="Prev"></a><a accesskey="u" href="../string_traits.html#id658458"><img src="../../../images/up.png" alt="Up"></a><a accesskey="h" href="../../../index.html"><img src="../../../images/home.png" alt="Home"></a><a accesskey="n" href="../unicode_string_adapter.html"><img src="../../../images/next.png" alt="Next"></a>
 </div>
 </body>
 </html>

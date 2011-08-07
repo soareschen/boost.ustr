@@ -1,0 +1,291 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>Advanced Techniques</title>
+<link rel="stylesheet" href="../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
+<link rel="up" href="../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
+<link rel="prev" href="unicode_string_adapter_builder.html" title="Unicode String Adapter Builder">
+<link rel="next" href="examples.html" title="Examples">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="unicode_string_adapter_builder.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="examples.html"><img src="../images/next.png" alt="Next"></a>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h2 class="title" style="clear: both">
+<a name="ustr.advanced"></a><a class="link" href="advanced.html" title="Advanced Techniques">Advanced Techniques</a>
+</h2></div></div></div>
+<div class="toc"><dl>
+<dt><span class="section"><a href="advanced.html#ustr.advanced.custom_string_traits">Custom String Traits</a></span></dt>
+<dt><span class="section"><a href="advanced.html#ustr.advanced.custom_encoding_traits">Custom Encoding
+      Traits</a></span></dt>
+<dt><span class="section"><a href="advanced.html#ustr.advanced.replace_policy">Replace Policy</a></span></dt>
+</dl></div>
+<p>
+      The <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code>
+      class has two optional template parameters that allow customization on the
+      encoding algorithm and the behavior of the raw string.
+    </p>
+<div class="section">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="ustr.advanced.custom_string_traits"></a><a class="link" href="advanced.html#ustr.advanced.custom_string_traits" title="Custom String Traits">Custom String Traits</a>
+</h3></div></div></div>
+<p>
+        The <code class="computeroutput"><span class="identifier">StringTraits</span></code> encoding
+        traits defines common types for the raw string such as pointer types and
+        also common operations such as raw string equality and append operation.
+      </p>
+<p>
+        
+</p>
+<pre class="programlisting"><span class="keyword">class</span> <span class="identifier">StringTraits</span> <span class="special">{</span>
+  <span class="keyword">public</span><span class="special">:</span>
+    <span class="keyword">typedef</span> <span class="identifier">string_type</span><span class="special">;</span>
+    <span class="keyword">typedef</span> <span class="identifier">codeunit_type</span><span class="special">;</span>
+    <span class="keyword">static</span> <span class="keyword">const</span> <span class="identifier">size_t</span> <span class="identifier">codeunit_size</span><span class="special">;</span>
+
+    <span class="keyword">typedef</span> <span class="identifier">raw_strptr_type</span><span class="special">;</span>
+    <span class="keyword">typedef</span> <span class="identifier">const_raw_strptr_type</span><span class="special">;</span>
+    <span class="keyword">typedef</span> <span class="identifier">const_strptr_type</span><span class="special">;</span>
+    <span class="keyword">typedef</span> <span class="identifier">mutable_strptr_type</span><span class="special">;</span>
+
+    <span class="keyword">typedef</span> <span class="identifier">codeunit_iterator_type</span><span class="special">;</span>
+
+    <span class="keyword">static</span> <span class="identifier">raw_strptr_type</span> <span class="identifier">new_string</span><span class="special">(</span><span class="keyword">const</span> <span class="identifier">string_type</span><span class="special">&amp;</span> <span class="identifier">str</span><span class="special">);</span>
+    <span class="keyword">static</span> <span class="identifier">raw_strptr_type</span> <span class="identifier">new_string</span><span class="special">();</span>
+    <span class="keyword">static</span> <span class="identifier">raw_strptr_type</span> <span class="identifier">clone_string</span><span class="special">(</span><span class="identifier">raw_strptr_type</span> <span class="identifier">str</span><span class="special">);</span>
+
+    <span class="keyword">struct</span> <span class="identifier">string</span> <span class="special">{</span>
+        <span class="keyword">static</span> <span class="keyword">bool</span> <span class="identifier">equals</span><span class="special">(</span><span class="keyword">const</span> <span class="identifier">string_type</span><span class="special">&amp;</span> <span class="identifier">str1</span><span class="special">,</span> <span class="keyword">const</span> <span class="identifier">string_type</span><span class="special">&amp;</span> <span class="identifier">str2</span><span class="special">);</span>
+
+        <span class="keyword">template</span> <span class="special">&lt;</span><span class="keyword">typename</span> <span class="identifier">Iterator</span><span class="special">&gt;</span>
+        <span class="keyword">static</span> <span class="identifier">string_type</span> <span class="identifier">from_iter</span><span class="special">(</span><span class="identifier">Iterator</span> <span class="identifier">begin</span><span class="special">,</span> <span class="identifier">Iterator</span> <span class="identifier">end</span><span class="special">);</span>
+    <span class="special">};</span>
+
+    <span class="keyword">struct</span> <span class="identifier">raw_strptr</span> <span class="special">{</span>
+        <span class="keyword">static</span> <span class="keyword">bool</span> <span class="identifier">equals</span><span class="special">(</span><span class="identifier">raw_strptr_type</span> <span class="identifier">str1</span><span class="special">,</span> <span class="identifier">raw_strptr_type</span> <span class="identifier">str2</span><span class="special">);</span>
+        <span class="keyword">static</span> <span class="keyword">bool</span> <span class="identifier">equals</span><span class="special">(</span><span class="identifier">raw_strptr_type</span> <span class="identifier">str1</span><span class="special">,</span> <span class="keyword">const</span> <span class="identifier">string_type</span><span class="special">&amp;</span> <span class="identifier">str2</span><span class="special">);</span>
+        <span class="keyword">static</span> <span class="keyword">void</span> <span class="identifier">delete_string</span><span class="special">(</span><span class="identifier">raw_strptr_type</span> <span class="identifier">str</span><span class="special">);</span>
+    <span class="special">};</span>
+
+    <span class="keyword">struct</span> <span class="identifier">const_strptr</span> <span class="special">{</span>
+        <span class="keyword">static</span> <span class="identifier">const_raw_strptr_type</span> <span class="identifier">get</span><span class="special">(</span><span class="keyword">const</span> <span class="identifier">const_strptr_type</span><span class="special">&amp;</span> <span class="identifier">str</span><span class="special">);</span>
+        <span class="keyword">static</span> <span class="identifier">codeunit_iterator_type</span> <span class="identifier">codeunit_begin</span><span class="special">(</span><span class="keyword">const</span> <span class="identifier">const_strptr_type</span><span class="special">&amp;</span> <span class="identifier">str</span><span class="special">);</span>
+        <span class="keyword">static</span> <span class="identifier">codeunit_iterator_type</span> <span class="identifier">codeunit_end</span><span class="special">(</span><span class="keyword">const</span> <span class="identifier">const_strptr_type</span><span class="special">&amp;</span> <span class="identifier">str</span><span class="special">);</span>
+        <span class="keyword">static</span> <span class="keyword">bool</span> <span class="identifier">equals</span><span class="special">(</span><span class="identifier">const_strptr_type</span> <span class="identifier">str1</span><span class="special">,</span> <span class="identifier">const_strptr_type</span> <span class="identifier">str2</span><span class="special">);</span>
+    <span class="special">};</span>
+
+    <span class="keyword">struct</span> <span class="identifier">mutable_strptr</span> <span class="special">{</span>
+        <span class="keyword">static</span> <span class="identifier">raw_strptr_type</span> <span class="identifier">release</span><span class="special">(</span><span class="identifier">mutable_strptr_type</span><span class="special">&amp;</span> <span class="identifier">str</span><span class="special">);</span>
+        <span class="keyword">static</span> <span class="identifier">raw_strptr_type</span> <span class="identifier">get</span><span class="special">(</span><span class="identifier">mutable_strptr_type</span><span class="special">&amp;</span> <span class="identifier">str</span><span class="special">);</span>
+        <span class="keyword">static</span> <span class="keyword">void</span> <span class="identifier">append</span><span class="special">(</span><span class="identifier">mutable_strptr_type</span><span class="special">&amp;</span> <span class="identifier">str</span><span class="special">,</span> <span class="identifier">codeunit_type</span> <span class="identifier">codeunit</span><span class="special">);</span>
+    <span class="special">};</span>
+<span class="special">};</span>
+</pre>
+<p>
+      </p>
+<p>
+        The <code class="computeroutput"><span class="identifier">StringTraits</span><span class="special">::</span><span class="identifier">codeunit_type</span></code> is used to obtain the raw
+        character type of the raw string while <code class="computeroutput"><span class="identifier">StringTraits</span><span class="special">::</span><span class="identifier">codeunit_size</span></code>
+        provides the size of the code units stored in the string. <code class="computeroutput"><span class="identifier">codeunit_type</span></code>
+        must behave the same as <code class="computeroutput"><span class="keyword">char</span></code>,
+        <code class="computeroutput"><span class="identifier">char16_t</span></code>, or <code class="computeroutput"><span class="identifier">char32_t</span></code> depending on the code unit size
+        or undefined behavior will occur during the encoding/decoding process. For
+        simplicity, there is currently no support for <code class="computeroutput"><span class="identifier">CodeunitTraits</span></code>
+        or <code class="computeroutput"><span class="identifier">CharTraits</span></code>, so it is not
+        possible to use existing <code class="computeroutput"><span class="identifier">CharTraits</span></code>
+        tricks similar in <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">basic_string</span></code> to further customize the string
+        behavior.
+      </p>
+<p>
+        Internally, <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code>
+        stores a smart pointer to the const raw string as the type <code class="computeroutput"><span class="identifier">StringTraits</span><span class="special">::</span><span class="identifier">const_strptr_type</span></code>. By default this is either
+        <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">shared_ptr</span><span class="special">&lt;</span><span class="identifier">string_type</span><span class="special">&gt;</span></code>
+        in C++11 or <code class="computeroutput"><span class="identifier">boost</span><span class="special">::</span><span class="identifier">shared_ptr</span><span class="special">&lt;</span><span class="identifier">string_type</span><span class="special">&gt;</span></code>
+        otherwise. In custom string traits, developer may change the <code class="computeroutput"><span class="identifier">const_strptr_type</span></code> to other smart pointer
+        types or even be the same type as the raw string type if the raw string type
+        offers copy-on-write operation.
+      </p>
+<p>
+        <code class="computeroutput"><span class="identifier">StringTraits</span><span class="special">::</span><span class="identifier">raw_strptr_type</span></code> is used to define the raw
+        pointer to the raw string and is used during the construction and freezing
+        of <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code>
+        instances.
+      </p>
+<p>
+        <code class="computeroutput"><span class="identifier">StringTraits</span><span class="special">::</span><span class="identifier">mutable_strptr_type</span></code> is treated as a <code class="computeroutput"><span class="identifier">unique_ptr</span></code> holding a mutable instance of
+        the raw string. If the underlying raw string type is fundamentally immutable,
+        then <code class="computeroutput"><span class="identifier">mutable_strptr_type</span></code>
+        has to be redefined as a mutable buffer type that is later convertible to
+        the immutable raw string when being frozen. Because no read operation will
+        be performed on <code class="computeroutput"><span class="identifier">mutable_strptr_type</span></code>,
+        it is fine if the alternative buffer type has different read semantics as
+        the immutable raw string type.
+      </p>
+<p>
+        <code class="computeroutput"><span class="identifier">StringTraits</span><span class="special">::</span><span class="identifier">codeunit_iterator_type</span></code> defines the const
+        iterator type of the raw string when it's <code class="computeroutput"><span class="identifier">begin</span><span class="special">()</span></code> and <code class="computeroutput"><span class="identifier">end</span><span class="special">()</span></code> methods are called. The iterator must be
+        readable but not writable and it is assumed that the iterator operations
+        will not cause side effects to the raw string object.
+      </p>
+<p>
+        <code class="computeroutput"><span class="identifier">StringTraits</span></code> also defines
+        four sub-traits that provide facade to string operations toward <code class="computeroutput"><span class="identifier">string_type</span></code>, <code class="computeroutput"><span class="identifier">raw_strptr_type</span></code>,
+        <code class="computeroutput"><span class="identifier">const_strptr_type</span></code> and <code class="computeroutput"><span class="identifier">mutable_strptr_type</span></code>. Most of these functions
+        are wrapper to common string operations including allocating new string on
+        heap, deleting string, get the raw string pointer from the smart pointer,
+        equality comparison between two strings, and calling <code class="computeroutput"><span class="identifier">begin</span><span class="special">()</span></code> and <code class="computeroutput"><span class="identifier">end</span><span class="special">()</span></code> methods of the string.
+      </p>
+<p>
+        Most of the requirements of <code class="computeroutput"><span class="identifier">StringTraits</span></code>
+        are pretty self explanatory in the default <code class="computeroutput"><span class="identifier">detail</span><span class="special">/</span><span class="identifier">string_traits</span><span class="special">.</span><span class="identifier">hpp</span></code> source
+        code.
+      </p>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="ustr.advanced.custom_encoding_traits"></a><a class="link" href="advanced.html#ustr.advanced.custom_encoding_traits" title="Custom Encoding Traits">Custom Encoding
+      Traits</a>
+</h3></div></div></div>
+<p>
+        The <code class="computeroutput"><span class="identifier">EncodingTraits</span></code> implements
+        the actual encoding/decoding operation of different UTF encodings and works
+        closely with <code class="computeroutput"><span class="identifier">StringTraits</span></code>
+        to perform the actual raw string-related operations. There are only two main
+        interface that <code class="computeroutput"><span class="identifier">EncodingTraits</span></code>
+        provides, which will be explained below.
+      </p>
+<p>
+        
+</p>
+<pre class="programlisting"><span class="keyword">static</span> <span class="keyword">void</span> <span class="identifier">EncodingTraits</span><span class="special">::</span><span class="identifier">append_codepoint</span><span class="special">(</span>
+        <span class="keyword">typename</span> <span class="identifier">StringTraits</span><span class="special">::</span><span class="identifier">mutable_strptr_type</span><span class="special">&amp;</span> <span class="identifier">str</span><span class="special">,</span>
+        <span class="keyword">const</span> <span class="identifier">codepoint_type</span><span class="special">&amp;</span> <span class="identifier">codepoint</span><span class="special">);</span>
+</pre>
+<p>
+      </p>
+<p>
+        This method takes a reference to a <code class="computeroutput"><span class="identifier">mutable_strptr_type</span></code>
+        and a const reference to codepoint and append the encoded code point to the
+        end of the buffer. This is the core encoding operation that <code class="computeroutput"><span class="identifier">EncodingTraits</span></code> provides.
+      </p>
+<p>
+        
+</p>
+<pre class="programlisting"><span class="keyword">class</span> <span class="identifier">EncodingTraits</span><span class="special">::</span><span class="identifier">codepoint_iterator_type</span> <span class="special">:</span>
+    <span class="keyword">public</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">iterator</span><span class="special">&lt;</span><span class="identifier">std</span><span class="special">::</span><span class="identifier">bidirectional_iterator_tag</span><span class="special">,</span> <span class="identifier">codepoint_type</span><span class="special">&gt;</span>
+<span class="special">{</span>
+  <span class="keyword">public</span><span class="special">:</span>       
+    <span class="identifier">codepoint_iterator_type</span><span class="special">(</span>
+        <span class="keyword">typename</span> <span class="identifier">StringTraits</span><span class="special">::</span><span class="identifier">codeunit_iterator_type</span> <span class="identifier">codeunit_it</span><span class="special">,</span>
+        <span class="keyword">typename</span> <span class="identifier">StringTraits</span><span class="special">::</span><span class="identifier">codeunit_iterator_type</span> <span class="identifier">begin</span><span class="special">,</span>
+        <span class="keyword">typename</span> <span class="identifier">StringTraits</span><span class="special">::</span><span class="identifier">codeunit_iterator_type</span> <span class="identifier">end</span><span class="special">);</span>
+
+    <span class="keyword">const</span> <span class="identifier">codepoint_type</span> <span class="keyword">operator</span> <span class="special">*()</span> <span class="keyword">const</span><span class="special">;</span>
+    <span class="special">...</span>
+<span class="special">};</span>
+</pre>
+<p>
+      </p>
+<p>
+        <code class="computeroutput"><span class="identifier">EncodingTraits</span></code> provides a
+        codepoint iterator that does decoding operations on the fly when being dereferenced
+        through <code class="computeroutput"><span class="keyword">operator</span> <span class="special">*()</span></code>.
+        The code point iterator class must fulfil the bidirectional iterator requirement
+        and also the two interfaces specified above.
+      </p>
+<p>
+        The constructor of the code point iterator takes three code unit iterators
+        corresponding to the current position, beginning position, and end position
+        respectively so that it can know the boundaries while transversing through
+        the code units. The begin and end code unit iterators are both required as
+        the code point iterator would increment or decrement in either directions,
+        and it is important to avoid out of bound access of the underlying code unit
+        iterator which can cause undefined behavior.
+      </p>
+<p>
+        The <code class="computeroutput"><span class="identifier">value_type</span></code> of the code
+        point iterator is <code class="computeroutput"><span class="identifier">codepoint_type</span></code>,
+        and it should be treated like a virtual pointer to code points, not code
+        units. The code point iterator hides the code unit abstraction layer so the
+        user of the iterator should not require any knowledge on the underlying code
+        units and encodings.
+      </p>
+<p>
+        With custom <code class="computeroutput"><span class="identifier">EncodingTraits</span></code>,
+        it is possible to simulate Unicode behavior for strings that are not encoded
+        in Unicode encodings. For example, one may implement custom encoding traits
+        for the Shift-JIS japanese encoding to make the strings backward compatible
+        with old applications while using these strings as if they are Unicode strings.
+      </p>
+<p>
+        Another possibility for custom <code class="computeroutput"><span class="identifier">EncodingTraits</span></code>
+        is to implement URL escaped or HTML entities formatted encodings for ASCII-encoded
+        strings. The custom encoding traits can then perform proper escape during
+        encoding and decoding operations and thus allows developers to treat the
+        Unicode-escaped ASCII-strings as if they are actual Unicode strings.
+      </p>
+</div>
+<div class="section">
+<div class="titlepage"><div><div><h3 class="title">
+<a name="ustr.advanced.replace_policy"></a><a class="link" href="advanced.html#ustr.advanced.replace_policy" title="Replace Policy">Replace Policy</a>
+</h3></div></div></div>
+<p>
+        The <code class="computeroutput"><span class="identifier">EncodingTraits</span></code> is also
+        responsible to decide what to do when there is error during encoding/decoding
+        operations. By default, the default <code class="computeroutput"><span class="identifier">encoding_traits</span></code>
+        class provides an optional template parameter <code class="computeroutput"><span class="identifier">Policy</span></code>
+        that is used to decide the recovery action. The default policy class for
+        this template parameter is <code class="computeroutput"><span class="identifier">replace_policy</span><span class="special">&lt;</span><span class="number">0xFFFD</span><span class="special">&gt;</span></code>, which is a templated replacement policy
+        class that replaces an invalid code point with the code point specified in
+        the template parameter and 0xFFFD corresponds to the standard Unicode replacement
+        character &#65533;.
+      </p>
+<p>
+        There is also another class provided by Boost.Ustr which is the <code class="computeroutput"><span class="identifier">error_policy</span></code>, which would throw an <code class="computeroutput"><span class="identifier">encoding_error</span></code> exception when any of it's
+        methods is called.
+      </p>
+<p>
+        To implement a custom policy class, one simply has to implement two static
+        methods within the class which are:
+      </p>
+<p>
+        
+</p>
+<pre class="programlisting"><span class="keyword">class</span> <span class="identifier">Policy</span> <span class="special">{</span>
+    <span class="keyword">static</span> <span class="identifier">codepoint_type</span> <span class="identifier">replace_invalid_codepoint</span><span class="special">();</span>
+    <span class="keyword">static</span> <span class="identifier">codepoint_type</span> <span class="identifier">replace_invalid_codepoint</span><span class="special">(</span><span class="identifier">codepoint_type</span> <span class="identifier">original</span><span class="special">);</span>
+<span class="special">};</span>
+</pre>
+<p>
+      </p>
+<p>
+        The zero-argument version of <code class="computeroutput"><span class="identifier">replace_invalid_codepoint</span><span class="special">()</span></code> is used during decoding error while the
+        one-argument version is used during encoding of a code point with invalid
+        value.
+      </p>
+<p>
+        It is recommended that custom encoding traits also accept the policy class
+        in their template parameters to allow users to customize the error behavior
+        according to their needs.
+      </p>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright &#169; 2011 Soares Chen Ruo Fei<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="unicode_string_adapter_builder.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="examples.html"><img src="../images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

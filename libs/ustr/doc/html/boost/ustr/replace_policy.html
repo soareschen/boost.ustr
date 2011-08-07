@@ -3,7 +3,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
 <title>Class template replace_policy</title>
 <link rel="stylesheet" href="../../boostbook.css" type="text/css">
-<meta name="generator" content="DocBook XSL Stylesheets V1.75.2">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
 <link rel="home" href="../../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
 <link rel="up" href="../../reference.html#header.boost.ustr.policy_hpp" title="Header &lt;boost/ustr/policy.hpp&gt;">
 <link rel="prev" href="utf_encoding_traits/codepoint_iterator.html" title="Class codepoint_iterator">
@@ -24,22 +24,22 @@
 <h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
 <div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="comment">// In header: &lt;<a class="link" href="../../reference.html#header.boost.ustr.policy_hpp" title="Header &lt;boost/ustr/policy.hpp&gt;">boost/ustr/policy.hpp</a>&gt;
 
-</span><span class="keyword">template</span><span class="special">&lt;</span><span class="identifier">codepoint_type</span> replacement <span class="special">=</span> <span class="char">'?'</span><span class="special">&gt;</span> 
+</span><span class="keyword">template</span><span class="special">&lt;</span><span class="identifier">codepoint_type</span> replacement <span class="special">=</span> <span class="number">0xFFFD</span><span class="special">&gt;</span> 
 <span class="keyword">class</span> <a class="link" href="replace_policy.html" title="Class template replace_policy">replace_policy</a> <span class="special">{</span>
 <span class="keyword">public</span><span class="special">:</span>
 
-  <span class="comment">// <a class="link" href="replace_policy.html#id284146-bb">public static functions</a></span>
-  <span class="keyword">static</span> <span class="identifier">codepoint_type</span> <a class="link" href="replace_policy.html#id284149-bb"><span class="identifier">replace_invalid_codepoint</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
-  <span class="keyword">static</span> <span class="identifier">codepoint_type</span> <a class="link" href="replace_policy.html#id284156-bb"><span class="identifier">replace_invalid_codepoint</span></a><span class="special">(</span><span class="identifier">codepoint_type</span><span class="special">)</span><span class="special">;</span>
+  <span class="comment">// <a class="link" href="replace_policy.html#id308730-bb">public static functions</a></span>
+  <span class="keyword">static</span> <span class="identifier">codepoint_type</span> <a class="link" href="replace_policy.html#id308733-bb"><span class="identifier">replace_invalid_codepoint</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
+  <span class="keyword">static</span> <span class="identifier">codepoint_type</span> <a class="link" href="replace_policy.html#id308740-bb"><span class="identifier">replace_invalid_codepoint</span></a><span class="special">(</span><span class="identifier">codepoint_type</span><span class="special">)</span><span class="special">;</span>
 <span class="special">}</span><span class="special">;</span></pre></div>
 <div class="refsect1">
-<a name="id648012"></a><h2>Description</h2>
+<a name="id655024"></a><h2>Description</h2>
 <div class="refsect2">
-<a name="id648016"></a><h3>
-<a name="id284146-bb"></a><code class="computeroutput">replace_policy</code> public static functions</h3>
+<a name="id655027"></a><h3>
+<a name="id308730-bb"></a><code class="computeroutput">replace_policy</code> public static functions</h3>
 <div class="orderedlist"><ol class="orderedlist" type="1">
-<li class="listitem"><pre class="literallayout"><span class="keyword">static</span> <span class="identifier">codepoint_type</span> <a name="id284149-bb"></a><span class="identifier">replace_invalid_codepoint</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre></li>
-<li class="listitem"><pre class="literallayout"><span class="keyword">static</span> <span class="identifier">codepoint_type</span> <a name="id284156-bb"></a><span class="identifier">replace_invalid_codepoint</span><span class="special">(</span><span class="identifier">codepoint_type</span> original<span class="special">)</span><span class="special">;</span></pre></li>
+<li class="listitem"><pre class="literallayout"><span class="keyword">static</span> <span class="identifier">codepoint_type</span> <a name="id308733-bb"></a><span class="identifier">replace_invalid_codepoint</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre></li>
+<li class="listitem"><pre class="literallayout"><span class="keyword">static</span> <span class="identifier">codepoint_type</span> <a name="id308740-bb"></a><span class="identifier">replace_invalid_codepoint</span><span class="special">(</span><span class="identifier">codepoint_type</span> original<span class="special">)</span><span class="special">;</span></pre></li>
 </ol></div>
 </div>
 </div>
