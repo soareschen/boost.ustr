@@ -62,7 +62,6 @@ class string_traits {
     typedef string_type*                            raw_strptr_type;
     typedef const string_type*                      const_raw_strptr_type;
 
-
 #ifdef BOOST_USTR_CPP0X
     typedef std::shared_ptr<const string_type>      const_strptr_type;
     typedef std::unique_ptr<string_type>            mutable_strptr_type;

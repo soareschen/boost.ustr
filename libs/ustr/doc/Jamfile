@@ -2,6 +2,7 @@
 
 using quickbook ;
 using doxygen ;
+import path ;
 
 project boost/libs/ustr/doc 
   : requirements

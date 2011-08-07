@@ -18,7 +18,7 @@ namespace ustr {
 /*
  * UTF-8 Encoding Traits
  */
-template < typename StringTraits, typename Policy = replace_policy<'?'> >
+template < typename StringTraits, typename Policy = replace_policy<0xFFFD> >
 class utf_encoding_traits {
   public:
     typedef StringTraits                                string_traits;

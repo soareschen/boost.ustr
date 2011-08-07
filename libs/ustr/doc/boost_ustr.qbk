@@ -486,7 +486,7 @@ read any code points or code units stored in it. To retrieve what have been stor
 must first call the `unicode_string_adapter_builder::freeze()` method which will freeze the string and return a 
 `unicode_string_adapter` object, then only perform read operations on the immutable string adapter. This design 
 forces Boost.Ustr users to choose from either read or write operation one at a time, leading to (what the author 
-believes to be) a better good design.
+believes to be) a better design.
 
 Other than the limitation to write-only operations, `unicode_string_adapter_builder` is also non-copyable. In C++11 
 `unicode_string_adapter_builder` would behave similar to `std::unique_ptr` and is only movable through rvalue 
@@ -514,22 +514,12 @@ the mutable adapter builder non-transferrable unless being freezed first.
     // Does not compile: unicode_string_adapter_builder does not 
     // support operator ==() and other read operations
     // assert(my_buffer == original_string);
-    unicode_string_adapter< std::string > freezed_string = my_buffer.freeze();
+
+    unicode_string_adapter< std::string > frozen_string = my_buffer.freeze();
 
     // OK: Freezed string becomes immutable and the const string type 
     // allows read but not write operation
-    assert(freezed_string == original_string);
-
-    // Compilable: The buffer is freezed first so is the immutable string adapter 
-    // being used to compared. Notice the inequality comparison (!=), indicating that 
-    // after the previous call to freeze() at the line above, the buffer content is 
-    // emptied and thus is no longer the same as the original string.
-    // IMPORTANT: Once freezed the original buffer will be flushed and no longer 
-    // contain the previously inserted content. DO NOT call freeze() like shown here 
-    // because you will lose the buffer content by not assigning the freezed object
-    // to a variable.
-    assert(my_buffer.freeze() != original_string);
-
+    assert(frozen_string == original_string);
 
     // Does not compile: unicode_string_adapter_builder is non-copyable
     // unicode_string_adapter_builder< std::string > buffer_copy = my_buffer;
@@ -589,7 +579,7 @@ source encoding is the same as the buffer encoding, and also the encoding correc
 malformed code unit is inserted into the buffer, the sequence will be detected and replaced according to the 
 encoding policy of the string adapter.
 
-(Coming soon) There is also a code unit output iterator available by calling the 
+There is also a code unit output iterator available by calling the 
 `unicode_string_adapter_builder::codeunit_begin()` method. This may be useful to be used together with 
 STL algorithms.
 
@@ -610,11 +600,200 @@ STL algorithms.
 
 [endsect]
 
+[section:editing Editing Existing Unicode String Adapters]
+To make modification on existing Unicode string adapters easy, there is an `unicode_string_adapter::edit()`
+method available to create a mutable copy of string adapter having the same string content. Upon calling the
+method, a new copy of the string content is made and stored in a `unicode_string_adapter_builder` object.
+Modifications made to the mutable string adapter does not affect the original immutable string adapter, and
+developer also has to call the `unicode_string_adapter_builder::method()` to read the modified string
+content.
+
+``
+   unicode_string_adapter< std::string > my_string = USTR("世界");
+
+   unicode_string_adapter_builder< std::string > mutable_copy = my_string.edit();
+   mutable_copy.append(USTR("你好");
+
+   unicode_string_adapter< std::string > freezed_copy = mutable_copy.freeze();
+
+   assert(my_string == USTR("世界"));
+   assert(my_string != USTR("世界你好"));
+   assert(freezed_copy == USTR("世界你好"));
+``
 [endsect]
 
+[endsect]
+
+[section:advanced Advanced Techniques]
+The `unicode_string_adapter` class has two optional template parameters that allow customization on the 
+encoding algorithm and the behavior of the raw string.
+
+[section:custom_string_traits Custom String Traits]
+The `StringTraits` encoding traits defines common types for the raw string such as pointer types and also 
+common operations such as raw string equality and append operation.
+
+``
+class StringTraits {
+  public:
+    typedef string_type;
+    typedef codeunit_type;
+    static const size_t codeunit_size;
+
+    typedef raw_strptr_type;
+    typedef const_raw_strptr_type;
+    typedef const_strptr_type;
+    typedef mutable_strptr_type;
+
+    typedef codeunit_iterator_type;
+
+    static raw_strptr_type new_string(const string_type& str);
+    static raw_strptr_type new_string();
+    static raw_strptr_type clone_string(raw_strptr_type str);
+
+    struct string {
+        static bool equals(const string_type& str1, const string_type& str2);
+
+        template <typename Iterator>
+        static string_type from_iter(Iterator begin, Iterator end);
+    };
+
+    struct raw_strptr {
+        static bool equals(raw_strptr_type str1, raw_strptr_type str2);
+        static bool equals(raw_strptr_type str1, const string_type& str2);
+        static void delete_string(raw_strptr_type str);
+    };
+
+    struct const_strptr {
+        static const_raw_strptr_type get(const const_strptr_type& str);
+        static codeunit_iterator_type codeunit_begin(const const_strptr_type& str);
+        static codeunit_iterator_type codeunit_end(const const_strptr_type& str);
+        static bool equals(const_strptr_type str1, const_strptr_type str2);
+    };
+
+    struct mutable_strptr {
+        static raw_strptr_type release(mutable_strptr_type& str);
+        static raw_strptr_type get(mutable_strptr_type& str);
+        static void append(mutable_strptr_type& str, codeunit_type codeunit);
+    };
+};
+``
+
+The `StringTraits::codeunit_type` is used to obtain the raw character type of the raw string while 
+`StringTraits::codeunit_size` provides the size of the code units stored in the string. `codeunit_type` 
+must behave the same as `char`, `char16_t`, or `char32_t` depending on the code unit size or undefined behavior 
+will occur during the encoding/decoding process. For simplicity, there is currently no support for `CodeunitTraits` 
+or `CharTraits`, so it is not possible to use existing `CharTraits` tricks similar in `std::basic_string` to further 
+customize the string behavior.
+
+Internally, `unicode_string_adapter` stores a smart pointer to the const raw string as the type 
+`StringTraits::const_strptr_type`. By default this is either `std::shared_ptr<string_type>` in C++11 or 
+`boost::shared_ptr<string_type>` otherwise. In custom string traits, developer may change the `const_strptr_type` 
+to other smart pointer types or even be the same type as the raw string type if the raw string type offers 
+copy-on-write operation.
+
+`StringTraits::raw_strptr_type` is used to define the raw pointer to the raw string and is used during the construction 
+and freezing of `unicode_string_adapter` instances.
+
+`StringTraits::mutable_strptr_type` is treated as a `unique_ptr` holding a mutable instance of the raw string. If the 
+underlying raw string type is fundamentally immutable, then `mutable_strptr_type` has to be redefined as a mutable buffer 
+type that is later convertible to the immutable raw string when being frozen. Because no read operation will be performed 
+on `mutable_strptr_type`, it is fine if the alternative buffer type has different read semantics as the immutable raw string type.
+
+`StringTraits::codeunit_iterator_type` defines the const iterator type of the raw string when it's `begin()` and `end()` 
+methods are called. The iterator must be readable but not writable and it is assumed that the iterator operations will not 
+cause side effects to the raw string object.
+
+`StringTraits` also defines four sub-traits that provide facade to string operations toward `string_type`, `raw_strptr_type`, 
+`const_strptr_type` and `mutable_strptr_type`. Most of these functions are wrapper to common string operations including 
+allocating new string on heap, deleting string, get the raw string pointer from the smart pointer, equality comparison 
+between two strings, and calling `begin()` and `end()` methods of the string. 
+
+Most of the requirements of `StringTraits` are pretty self explanatory in the default `detail/string_traits.hpp` source code. 
+
+[endsect]
+
+[section:custom_encoding_traits Custom Encoding Traits]
+The `EncodingTraits` implements the actual encoding/decoding operation of different UTF encodings and works closely with 
+`StringTraits` to perform the actual raw string-related operations. There are only two main interface that `EncodingTraits` 
+provides, which will be explained below.
+
+``
+static void EncodingTraits::append_codepoint(
+        typename StringTraits::mutable_strptr_type& str,
+        const codepoint_type& codepoint);
+``
+
+This method takes a reference to a `mutable_strptr_type` and a const reference to codepoint and append the encoded code point 
+to the end of the buffer. This is the core encoding operation that `EncodingTraits` provides.
+
+``
+class EncodingTraits::codepoint_iterator_type :
+    public std::iterator<std::bidirectional_iterator_tag, codepoint_type>
+{
+  public:       
+    codepoint_iterator_type(
+        typename StringTraits::codeunit_iterator_type codeunit_it,
+        typename StringTraits::codeunit_iterator_type begin,
+        typename StringTraits::codeunit_iterator_type end);
+
+    const codepoint_type operator *() const;
+    ...
+};
+``
+
+`EncodingTraits` provides a codepoint iterator that does decoding operations on the fly when being dereferenced through 
+`operator *()`. The code point iterator class must fulfil the bidirectional iterator requirement and also the two interfaces 
+specified above.
+
+The constructor of the code point iterator takes three code unit iterators corresponding to the current position, beginning 
+position, and end position respectively so that it can know the boundaries while transversing through the code units. The begin 
+and end code unit iterators are both required as the code point iterator would increment or decrement in either directions, and 
+it is important to avoid out of bound access of the underlying code unit iterator which can cause undefined behavior.
+
+The `value_type` of the code point iterator is `codepoint_type`, and it should be treated like a virtual pointer to code points, 
+not code units. The code point iterator hides the code unit abstraction layer so the user of the iterator should not require any 
+knowledge on the underlying code units and encodings.
+
+With custom `EncodingTraits`, it is possible to simulate Unicode behavior for strings that are not encoded in Unicode encodings. 
+For example, one may implement custom encoding traits for the Shift-JIS japanese encoding to make the strings backward compatible 
+with old applications while using these strings as if they are Unicode strings.
+
+Another possibility for custom `EncodingTraits` is to implement URL escaped or HTML entities formatted encodings for ASCII-encoded 
+strings. The custom encoding traits can then perform proper escape during encoding and decoding operations and thus allows developers 
+to treat the Unicode-escaped ASCII-strings as if they are actual Unicode strings.
+
+[endsect]
+
+[section:replace_policy Replace Policy]
+The `EncodingTraits` is also responsible to decide what to do when there is error during encoding/decoding operations. By default,
+the default `encoding_traits` class provides an optional template parameter `Policy` that is used to decide the recovery action. 
+The default policy class for this template parameter is `replace_policy<0xFFFD>`, which is a templated replacement policy class that 
+replaces an invalid code point with the code point specified in the template parameter and 0xFFFD corresponds to the standard 
+Unicode replacement character �.
+
+There is also another class provided by Boost.Ustr which is the `error_policy`, which would throw an `encoding_error` exception 
+when any of it's methods is called.
+
+To implement a custom policy class, one simply has to implement two static methods within the class which are:
+
+``
+class Policy {
+    static codepoint_type replace_invalid_codepoint();
+    static codepoint_type replace_invalid_codepoint(codepoint_type original);
+};
+``
+
+The zero-argument version of `replace_invalid_codepoint()` is used during decoding error while the one-argument version is used 
+during encoding of a code point with invalid value.
+
+It is recommended that custom encoding traits also accept the policy class in their template parameters to allow users to customize 
+the error behavior according to their needs.
+
+[endsect]
+
+[endsect]
 
 [section:examples Examples]
-
 [endsect]
 
 [xinclude autodoc.xml]

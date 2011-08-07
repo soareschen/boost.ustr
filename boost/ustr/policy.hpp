@@ -11,7 +11,7 @@
 namespace boost {
 namespace ustr {
 
-template < codepoint_type replacement = '?' >
+template < codepoint_type replacement = 0xFFFD >
 class replace_policy {
   public:
     static codepoint_type replace_invalid_codepoint() {
