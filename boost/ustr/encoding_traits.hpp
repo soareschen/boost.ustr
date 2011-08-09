@@ -38,9 +38,15 @@ class utf_encoding_traits {
     typedef typename util::encoding_engine<
         string_traits::codeunit_size, Policy >::type    encoder;
 
+    typedef typename util::encoding_engine< 
+        string_traits::codeunit_size, 
+        error_policy >::type                            verifier;
+
     class codepoint_iterator;
 
     typedef codepoint_iterator                          codepoint_iterator_type;
+
+    static const bool replace_malformed = Policy::replace_malformed;
     
     /*
      * Estimate the number of codeunits required to represent a given length of
@@ -58,6 +64,17 @@ class utf_encoding_traits {
     static void append_codepoint(mutable_strptr_type& str, const codepoint_type& codepoint) {
         string_traits::mutable_strptr::check_and_initialize(str);
         encoder::encode(codepoint, std::back_inserter(*str));
+    }
+
+    static bool validate(codeunit_iterator_type begin, codeunit_iterator_type end) {
+        try {
+            while(begin != end) {
+                verifier::decode(begin, end);
+            }
+            return true;
+        } catch(encoding_error) {
+            return false;
+        }
     }
     
     class codepoint_iterator :

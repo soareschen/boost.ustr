@@ -38,7 +38,7 @@ inline bool is_valid_codepoint(const codepoint_type& codepoint) {
 }
 
 inline bool is_single_codeunit(const utf16_codeunit_type& codeunit) {
-    return codeunit <= 0xD7FF || (0xE000 <= codeunit && codeunit <= 0xFFFF);
+    return codeunit <= 0xD7FF || codeunit >= 0xE000;
 }
 
 inline bool has_single_codeunit(const codepoint_type& codepoint) {

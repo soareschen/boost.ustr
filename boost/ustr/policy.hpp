@@ -11,9 +11,11 @@
 namespace boost {
 namespace ustr {
 
-template < codepoint_type replacement = 0xFFFD >
+template < codepoint_type replacement = 0xFFFD, bool ReplaceMalformed = true>
 class replace_policy {
   public:
+    static const bool replace_malformed = ReplaceMalformed;
+
     static codepoint_type replace_invalid_codepoint() {
         return replacement;
     }
@@ -27,6 +29,8 @@ class encoding_error : public std::exception { };
 
 class error_policy {
   public:
+    static const bool replace_malformed = true;
+
     static codepoint_type replace_invalid_codepoint() {
         throw encoding_error();
     }

@@ -261,6 +261,30 @@ typedef ::testing::Types<
 
 INSTANTIATE_TYPED_TEST_CASE_P(basic, string_adapter_double_test, double_test_type_params);
 
+TEST(string_adapter_validation_test, codepoint_replacement) {
+    std::string *raw_string = new std::string("\x80\x80X");
+    unicode_string_adapter< std::string > malformed_string(raw_string);
+
+    typename unicode_string_adapter< std::string >::iterator
+    mit = malformed_string.begin();
+
+    EXPECT_EQ(*mit++, (codepoint_type)0xFFFD);
+    EXPECT_EQ(*mit++, (codepoint_type)0xFFFD);
+    EXPECT_EQ(*mit++, (codepoint_type)'X');
+
+    std::string sanitized_string = *malformed_string;
+    typename std::string::iterator sit = sanitized_string.begin();
+
+    EXPECT_EQ(*sit++, '\xEF');
+    EXPECT_EQ(*sit++, '\xBF');
+    EXPECT_EQ(*sit++, '\xBD');
+
+    EXPECT_EQ(*sit++, '\xEF');
+    EXPECT_EQ(*sit++, '\xBF');
+    EXPECT_EQ(*sit++, '\xBD');
+
+    EXPECT_EQ(*sit++, 'X');
+}
 
 
 

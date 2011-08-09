@@ -25,7 +25,7 @@ template <
     typename StringT,
     typename StringTraits = string_traits<StringT>,
     typename EncodingTraits = utf_encoding_traits<
-        StringTraits, replace_policy<'?'> 
+        StringTraits, replace_policy<0xFFFD> 
     >
 >
 class unicode_string_adapter;
@@ -34,7 +34,7 @@ template <
     typename StringT,
     typename StringTraits = string_traits<StringT>,
     typename EncodingTraits = utf_encoding_traits<
-        StringTraits, replace_policy<'?'> 
+        StringTraits, replace_policy<0xFFFD> 
     >
 >
 class unicode_string_adapter_builder;
@@ -371,7 +371,15 @@ class unicode_string_adapter
     }
 
     void validate() {
+        bool valid = encoding_traits::validate(
+                string_traits::const_strptr::codeunit_begin(_buffer), 
+                string_traits::const_strptr::codeunit_end(_buffer));
 
+        if(!valid && encoding_traits::replace_malformed) {
+            mutable_adapter_type sanitized;
+            sanitized.append(*this);
+            _buffer.reset(sanitized.release());
+        }
     }
 
   private:

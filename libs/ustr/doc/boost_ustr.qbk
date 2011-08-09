@@ -311,22 +311,27 @@ into a local variable and should try to minimize such operation. The raw string 
 be accessed through operator ->(), although only const methods are allowed.
 
 ``
-    // Legacy library API that accepts only raw std::string but correctly 
-    // expects UTF-8 encoding
-    void my_legacy_function(const std::string& str);
-
     unicode_string_adapter< std::string > my_string = USTR("世界你好");
 
     // A local copy operation is performed to copy the string content
     // from the heap to the stack. This might get expensive if done too much.
     std::string my_raw_string = *my_string;
 
+    // Legacy library API that accepts only raw std::string but correctly 
+    // expects UTF-8 encoding
+    void my_legacy_function(const std::string& str);
+
     // Because the function accepts const reference, no extra copying is needed
     my_legacy_function(*my_string);
-    
-    // Calls std::string::begin(). It returns the raw code unit iterator
-    // instead of the string adapter's code point iterator
-    typename std::string::const_iterator it = my_string->begin();
+
+    // C library API that accepts only C-style string but correclty expects 
+    // UTF-8 encoding
+    void my_c_function(const char* str);
+
+    // Pass const char* to C function through std::string::c_str(). This is handy 
+    // because we are using std::string's existing method instead of having to  
+    // reinvent it on unicode_string_adapter.
+    my_c_function(my_string->c_str());
 ``
 
 While obtaining raw string from `unicode_string_adapter` is quite simple, constructing string adapter 
@@ -418,7 +423,7 @@ resulting string would follow the type of the first operand.
 
 ``
     unicode_string_adapter< std::string > first_string = USTR("世界");
-    unicode_string_adapter< std::vector< char16_t > second_string = USTR("你好");
+    unicode_string_adapter< std::vector< char16_t > > second_string = USTR("你好");
 
     // The return type is the same type as the first operand
     unicode_string_adapter< std::string > new_string = first_string + second_string;
@@ -439,7 +444,7 @@ concatenation. There is also no `operator +=()` available, so append operation i
 `unicode_string_adapter` provides uniform access to code points stored in strings encoded in any Unicode encoding. 
 The access is straight forward by simply calling `begin()` and `end()` to retrieve the code point iterators. The 
 `value_type` for the iterator is `const codepoint_type` when derefenced via `operator *()`. The code point iterator 
-will perform the decoding operating behind the scene using the appropriate decoding engine, so the user do not need 
+will perform the decoding operation behind the scene using the appropriate decoding engine, so the user do not need 
 to know which encoding the Unicode string is encoded in.
 
 ``
