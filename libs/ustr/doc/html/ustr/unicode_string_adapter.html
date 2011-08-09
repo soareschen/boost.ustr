@@ -366,22 +366,27 @@
 <p>
         
 </p>
-<pre class="programlisting"><span class="comment">// Legacy library API that accepts only raw std::string but correctly </span>
-<span class="comment">// expects UTF-8 encoding</span>
-<span class="keyword">void</span> <span class="identifier">my_legacy_function</span><span class="special">(</span><span class="keyword">const</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&amp;</span> <span class="identifier">str</span><span class="special">);</span>
-
-<span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">my_string</span> <span class="special">=</span> <span class="identifier">USTR</span><span class="special">(</span><span class="string">"&#19990;&#30028;&#20320;&#22909;"</span><span class="special">);</span>
+<pre class="programlisting"><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">my_string</span> <span class="special">=</span> <span class="identifier">USTR</span><span class="special">(</span><span class="string">"&#19990;&#30028;&#20320;&#22909;"</span><span class="special">);</span>
 
 <span class="comment">// A local copy operation is performed to copy the string content</span>
 <span class="comment">// from the heap to the stack. This might get expensive if done too much.</span>
 <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="identifier">my_raw_string</span> <span class="special">=</span> <span class="special">*</span><span class="identifier">my_string</span><span class="special">;</span>
 
+<span class="comment">// Legacy library API that accepts only raw std::string but correctly </span>
+<span class="comment">// expects UTF-8 encoding</span>
+<span class="keyword">void</span> <span class="identifier">my_legacy_function</span><span class="special">(</span><span class="keyword">const</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">&amp;</span> <span class="identifier">str</span><span class="special">);</span>
+
 <span class="comment">// Because the function accepts const reference, no extra copying is needed</span>
 <span class="identifier">my_legacy_function</span><span class="special">(*</span><span class="identifier">my_string</span><span class="special">);</span>
 
-<span class="comment">// Calls std::string::begin(). It returns the raw code unit iterator</span>
-<span class="comment">// instead of the string adapter's code point iterator</span>
-<span class="keyword">typename</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span><span class="special">::</span><span class="identifier">const_iterator</span> <span class="identifier">it</span> <span class="special">=</span> <span class="identifier">my_string</span><span class="special">-&gt;</span><span class="identifier">begin</span><span class="special">();</span>
+<span class="comment">// C library API that accepts only C-style string but correclty expects </span>
+<span class="comment">// UTF-8 encoding</span>
+<span class="keyword">void</span> <span class="identifier">my_c_function</span><span class="special">(</span><span class="keyword">const</span> <span class="keyword">char</span><span class="special">*</span> <span class="identifier">str</span><span class="special">);</span>
+
+<span class="comment">// Pass const char* to C function through std::string::c_str(). This is handy </span>
+<span class="comment">// because we are using std::string's existing method instead of having to  </span>
+<span class="comment">// reinvent it on unicode_string_adapter.</span>
+<span class="identifier">my_c_function</span><span class="special">(</span><span class="identifier">my_string</span><span class="special">-&gt;</span><span class="identifier">c_str</span><span class="special">());</span>
 </pre>
 <p>
       </p>
@@ -518,7 +523,7 @@
         
 </p>
 <pre class="programlisting"><span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">first_string</span> <span class="special">=</span> <span class="identifier">USTR</span><span class="special">(</span><span class="string">"&#19990;&#30028;"</span><span class="special">);</span>
-<span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span> <span class="identifier">char16_t</span> <span class="special">&gt;</span> <span class="identifier">second_string</span> <span class="special">=</span> <span class="identifier">USTR</span><span class="special">(</span><span class="string">"&#20320;&#22909;"</span><span class="special">);</span>
+<span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span><span class="special">&lt;</span> <span class="identifier">char16_t</span> <span class="special">&gt;</span> <span class="special">&gt;</span> <span class="identifier">second_string</span> <span class="special">=</span> <span class="identifier">USTR</span><span class="special">(</span><span class="string">"&#20320;&#22909;"</span><span class="special">);</span>
 
 <span class="comment">// The return type is the same type as the first operand</span>
 <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span> <span class="identifier">std</span><span class="special">::</span><span class="identifier">string</span> <span class="special">&gt;</span> <span class="identifier">new_string</span> <span class="special">=</span> <span class="identifier">first_string</span> <span class="special">+</span> <span class="identifier">second_string</span><span class="special">;</span>
@@ -549,7 +554,7 @@
         <code class="computeroutput"><span class="identifier">value_type</span></code> for the iterator
         is <code class="computeroutput"><span class="keyword">const</span> <span class="identifier">codepoint_type</span></code>
         when derefenced via <code class="computeroutput"><span class="keyword">operator</span> <span class="special">*()</span></code>. The code point iterator will perform
-        the decoding operating behind the scene using the appropriate decoding engine,
+        the decoding operation behind the scene using the appropriate decoding engine,
         so the user do not need to know which encoding the Unicode string is encoded
         in.
       </p>
