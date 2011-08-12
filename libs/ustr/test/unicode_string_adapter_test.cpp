@@ -13,6 +13,7 @@
 #include <boost/ustr/unicode_string_adapter.hpp>
 #include <boost/ustr/string_traits.hpp>
 #include <boost/ustr/encoding_traits.hpp>
+#include <boost/ustr/detail/alt_string_traits.hpp>
 #include <libs/ustr/test/fixture.hpp>
 #include "gtest.h"
 
@@ -247,7 +248,8 @@ typedef ::testing::Types<
         unicode_string_adapter< std::vector<char> >,
         unicode_string_adapter< std::vector<utf16_codeunit_type> >,
         unicode_string_adapter< std::list<char> >,
-        unicode_string_adapter< std::list<utf16_codeunit_type> >
+        unicode_string_adapter< std::list<utf16_codeunit_type> >,
+        unicode_string_adapter< std::string, alt_string_traits<std::string> >
     > single_test_type_params;
 
 INSTANTIATE_TYPED_TEST_CASE_P(basic, string_adapter_single_test, single_test_type_params);
@@ -263,7 +265,9 @@ INSTANTIATE_TYPED_TEST_CASE_P(basic, string_adapter_double_test, double_test_typ
 
 TEST(string_adapter_validation_test, codepoint_replacement) {
     std::string *raw_string = new std::string("\x80\x80X");
-    unicode_string_adapter< std::string > malformed_string(raw_string);
+
+    unicode_string_adapter< std::string > malformed_string = 
+        unicode_string_adapter<std::string>::from_ptr(raw_string);
 
     typename unicode_string_adapter< std::string >::iterator
     mit = malformed_string.begin();

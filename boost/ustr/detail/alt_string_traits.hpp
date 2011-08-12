@@ -12,6 +12,7 @@
 #include <memory>
 #include <utility>
 #include <algorithm>
+#include <iterator>
 #include <boost/ustr/detail/util.hpp>
 #include <boost/ustr/detail/incl.hpp>
 #include <boost/shared_ptr.hpp>
@@ -21,35 +22,11 @@
 namespace boost {
 namespace ustr {
 
-template <typename StringT>
-class char_type { 
-  public:
-    typedef typename StringT::value_type        type;
-};
-
-template < typename CharT, typename CharTraits, typename Alloc >
-class char_type< std::basic_string<CharT, CharTraits, Alloc> > {
-  public:
-    typedef CharT   type;
-};
-
-template < typename CharT, typename Alloc >
-class char_type< std::vector<CharT, Alloc> > {
-  public:
-    typedef CharT   type;
-};
-
-template < typename CharT, typename Alloc >
-class char_type< std::list<CharT, Alloc> > {
-  public:
-    typedef CharT   type;
-};
-
 template <
     typename StringT,
     typename CharT = typename char_type<StringT>::type
 >
-class string_traits { 
+class alt_string_traits { 
   public:
     typedef string_traits<StringT>                  this_traits;
     typedef StringT                                 string_type;
@@ -59,19 +36,11 @@ class string_traits {
     static const size_t codeunit_size = sizeof(codeunit_type);
     static const string_type empty_string;
 
-    typedef string_type*                            raw_strptr_type;
-    typedef const string_type*                      const_raw_strptr_type;
+    typedef string_type                             raw_strptr_type;
+    typedef const string_type                       const_raw_strptr_type;
 
-#ifdef BOOST_USTR_CPP0X
-    typedef std::shared_ptr<const string_type>      const_strptr_type;
-    typedef std::unique_ptr<string_type>            mutable_strptr_type;
-#elif BOOST_HAS_TR1_SHARED_PTR
-    typedef std::tr1::shared_ptr<const string_type> const_strptr_type;
-    typedef std::auto_ptr<string_type>              mutable_strptr_type;
-#else
-    typedef boost::shared_ptr<const string_type>    const_strptr_type;
-    typedef std::auto_ptr<string_type>              mutable_strptr_type;
-#endif
+    typedef const string_type                       const_strptr_type;
+    typedef string_type                             mutable_strptr_type;
 
     typedef typename
         string_type::const_iterator                 codeunit_iterator_type;
@@ -83,15 +52,15 @@ class string_traits {
     typedef std::basic_string<raw_char_type>        raw_string_type;
 
     static raw_strptr_type new_string(const string_type& str) {
-        return new string_type(str);
+        return string_type(str);
     }
 
     static raw_strptr_type new_string() {
-        return new string_type();
+        return string_type();
     }
 
     static raw_strptr_type clone_string(raw_strptr_type str) {
-        return new string_type(*str);
+        return string_type(str);
     }
 
     struct string {
@@ -112,9 +81,7 @@ class string_traits {
         }
 
         static string_type from_raw_string(const raw_string_type& str) {
-            string_type new_str;
-            std::copy(str.begin(), str.end(), std::back_inserter(new_str));
-            return new_str;
+            return string_type(str);
         }
 
         template <typename Iterator>
@@ -128,105 +95,67 @@ class string_traits {
     struct raw_strptr {
       public:
         static bool equals(raw_strptr_type str1, raw_strptr_type str2) {
-            if(str1 && str2) {
-                return string::equals(*str1, *str2);
-            } else if(!str1 && str2) {
-                return string::equals(empty_string, *str2);
-            } else if(str1 && !str2) {
-                return string::equals(*str1, empty_string);
-            } else {
-                return true;
-            }
+            return string::equals(str1, str2);
         }
 
         static bool equals(raw_strptr_type str1, const string_type& str2) {
-            if(str1) {
-                return string::equals(*str1, str2);
-            } else {
-                return string::equals(empty_string, str2);
-            }
+            return string::equals(str1, str2);
         }
 
         static void delete_string(raw_strptr_type str) {
-            delete str;
+            
         }
     };
 
     struct const_strptr {
         static const_raw_strptr_type get(const const_strptr_type& str) {
-            return str.get();
+            return str;
         }
 
         static codeunit_iterator_type
         codeunit_begin(const const_strptr_type& str) {
-            if(str) {
-                return str->begin();
-            } else {
-                return empty_string.begin();
-            }
-        }
-
-        static void reset(const_strptr_type& str, raw_strptr_type new_str) {
-            str.reset(new_str);
+            return str.begin();
         }
 
         static codeunit_iterator_type 
         codeunit_end(const const_strptr_type& str) {
-            if(str) {
-                return str->end();
-            } else {
-                return empty_string.end();
-            }
-
+            return str.end();
         }
 
         static bool equals(const_strptr_type str1, const_strptr_type str2) {
-            if(str1 && str2) {
-                return string::equals(*str1, *str2);
-            } else if(!str1 && str2) {
-                return string::equals(empty_string, *str2);
-            } else if(str1 && !str2) {
-                return string::equals(*str1, empty_string);
-            } else {
-                return true;
-            }
+            return string::equals(str1, str2);
+        }
+
+        static void reset(const_strptr_type& str, raw_strptr_type new_str) {
+            const_cast<string_type&>(str).assign(new_str);
         }
     };
 
     struct mutable_strptr {
         static raw_strptr_type release(mutable_strptr_type& str) {
-            return str.release();
+            return str;
         }
-
-#ifndef BOOST_NO_RVALUE_REFERENCES
-        static raw_strptr_type release(mutable_strptr_type&& str) {
-            return str.release();
-        }
-#endif
 
         static raw_strptr_type get(mutable_strptr_type& str) {
-            return str.get();
+            return str;
         }
 
         static void append(mutable_strptr_type& str, codeunit_type codeunit) {
-            check_and_initialize(str);
-            str->push_back(codeunit);
+            str.push_back(codeunit);
+        }
+
+        static void check_and_initialize(mutable_strptr_type& str) {
+
         }
 
         static codeunit_output_iterator_type output_iterator(mutable_strptr_type& str) {
-            return std::back_inserter(*str);
+            return std::back_inserter(str);
         } 
-
-        static void check_and_initialize(mutable_strptr_type& str) {
-            if(!str.get()) {
-                str.reset(new_string());
-            }
-        }
     };
 };
 
 template <typename StringT, typename CharT>
-const StringT string_traits< StringT, CharT >::empty_string;
+const StringT alt_string_traits< StringT, CharT >::empty_string;
 
 } // namespace ustr
 } // namespace boost

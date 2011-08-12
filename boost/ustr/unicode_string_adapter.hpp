@@ -9,6 +9,8 @@
 #include <iterator>
 #include <boost/static_assert.hpp>
 #include <boost/concept_check.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_same.hpp>
 #include <boost/ustr/policy.hpp>
 #include <boost/ustr/string_traits.hpp>
 #include <boost/ustr/encoding_traits.hpp>
@@ -24,18 +26,14 @@ namespace ustr {
 template <
     typename StringT,
     typename StringTraits = string_traits<StringT>,
-    typename EncodingTraits = utf_encoding_traits<
-        StringTraits, replace_policy<0xFFFD> 
-    >
+    typename EncodingTraits = utf_encoding_traits<StringTraits>
 >
 class unicode_string_adapter;
 
 template <
     typename StringT,
     typename StringTraits = string_traits<StringT>,
-    typename EncodingTraits = utf_encoding_traits<
-        StringTraits, replace_policy<0xFFFD> 
-    >
+    typename EncodingTraits = utf_encoding_traits<StringTraits>
 >
 class unicode_string_adapter_builder;
 
@@ -129,10 +127,6 @@ class unicode_string_adapter
                  == codeunit_size));
 
         mutable_adapter_type buffer;
-        //while(begin != end) {
-        //    buffer.append_codeunit(*begin++);
-        //}
-
         std::copy(begin, end, buffer.codeunit_begin());
 
         return buffer.freeze();
@@ -149,6 +143,31 @@ class unicode_string_adapter
 
         return buffer.freeze();
     }
+
+    template <typename CodeunitIterator>
+    static codepoint_iterator<CodeunitIterator, typename encoding_traits::encoder, typename encoding_traits::policy>
+    make_codepoint_iterator(CodeunitIterator current, CodeunitIterator begin, CodeunitIterator end) {
+        return codepoint_iterator<CodeunitIterator, 
+               typename encoding_traits::encoder, typename encoding_traits::policy>(current, begin, end);
+    }
+
+    static this_type from_const_strptr(const const_strptr_type& other) {
+        this_type str;
+        str._buffer = other;
+        str.validate();
+
+        return str;
+    }
+
+    static this_type from_ptr(raw_strptr_type other) {
+        this_type str;
+        string_traits::const_strptr::reset(str._buffer, other);
+        str.validate();
+
+        return str;
+    }
+
+    unicode_string_adapter() : _buffer() { }
 
     /*
      * Implicit lightweight copy construction from other const adapter.
@@ -184,7 +203,7 @@ class unicode_string_adapter
         mutable_adapter_type buffer;
         buffer.append(other);
 
-        _buffer.reset(buffer.release());
+        string_traits::const_strptr::reset(_buffer, buffer.release());
     }
 
     /*
@@ -193,15 +212,6 @@ class unicode_string_adapter
      */
     explicit unicode_string_adapter(const string_type& other) :
         _buffer(string_traits::new_string(other))
-    {
-        validate();
-    }
-
-    /*
-     * Explicit lightweight copy construction from a const pointer to the string.
-     */
-    explicit unicode_string_adapter(const const_strptr_type& other) :
-        _buffer(other)
     {
         validate();
     }
@@ -216,16 +226,6 @@ class unicode_string_adapter
         validate();
     }
 #endif
-
-    /*
-     * Explicit lightweight construction from a raw pointer to the string.
-     * The raw pointer is adopted and now owned by this class.
-     */
-    explicit unicode_string_adapter(raw_strptr_type other) :
-        _buffer(other)
-    {
-        validate();
-    }
 
 
     /*
@@ -378,7 +378,7 @@ class unicode_string_adapter
         if(!valid && encoding_traits::replace_malformed) {
             mutable_adapter_type sanitized;
             sanitized.append(*this);
-            _buffer.reset(sanitized.release());
+            string_traits::const_strptr::reset(_buffer, sanitized.release());
         }
     }
 
@@ -470,11 +470,11 @@ class unicode_string_adapter_builder
      * is that the above is a copy construction where a new copy of string is created.
      */
     const_adapter_type freeze() {
-        return const_adapter_type(string_traits::mutable_strptr::release(_buffer));
+        return const_adapter_type::from_ptr(string_traits::mutable_strptr::release(_buffer));
     }
 
     const_adapter_type freeze_copy() {
-        return const_adapter_type(clone_buffer());
+        return const_adapter_type::from_ptr(clone_buffer());
     }
 
     codepoint_output_iterator_type begin() {

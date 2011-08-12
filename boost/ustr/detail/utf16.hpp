@@ -73,11 +73,10 @@ inline codepoint_type decode_two_codeunits(
             (lo & BIT_ONE_TO_TEN);
 }
 
-template <typename Policy = error_policy>
 class utf16_encoder {
   public:
-    template <typename OutputIterator>
-    static inline void encode(const codepoint_type& codepoint, OutputIterator out) {
+    template <typename OutputIterator, typename Policy>
+    static inline void encode(const codepoint_type& codepoint, OutputIterator out, Policy policy) {
         if(has_single_codeunit(codepoint)) {
             *out++ = static_cast<const utf16_codeunit_type>(codepoint & 0xFFFF);
         } else if(has_double_codeunit(codepoint)) {
@@ -89,12 +88,12 @@ class utf16_encoder {
         } else {
             codepoint_type replacement_codepoint = Policy::replace_invalid_codepoint(codepoint);
             assert(replacement_codepoint != codepoint);
-            encode(replacement_codepoint, out);
+            encode(replacement_codepoint, out, policy);
         }
     }
 
-    template <typename CodeunitInputIterator>
-    static inline codepoint_type decode(CodeunitInputIterator& begin, const CodeunitInputIterator& end) {
+    template <typename CodeunitInputIterator, typename Policy>
+    static inline codepoint_type decode(CodeunitInputIterator& begin, const CodeunitInputIterator& end, Policy policy) {
         utf16_codeunit_type hi = *begin++;
         if(is_high_surrogate(hi)) {
             if(begin == end) {
@@ -105,7 +104,7 @@ class utf16_encoder {
             if(!is_low_surrogate(lo)) {
                 return Policy::replace_invalid_codepoint();
             } else {
-                return check_and_return(decode_two_codeunits(hi, lo));
+                return check_and_return(decode_two_codeunits(hi, lo), policy);
             }
         } else if(is_low_surrogate(hi)) {
             return Policy::replace_invalid_codepoint();
@@ -114,8 +113,8 @@ class utf16_encoder {
         }
     }
 
-    template <typename CodeunitIterator>
-    static inline codepoint_type decode_previous(const CodeunitIterator& begin, CodeunitIterator& end) {
+    template <typename CodeunitIterator, typename Policy>
+    static inline codepoint_type decode_previous(const CodeunitIterator& begin, CodeunitIterator& end, Policy policy) {
         if(end == begin) {
             return Policy::replace_invalid_codepoint();
         }
@@ -130,14 +129,15 @@ class utf16_encoder {
             }
 
             utf16_codeunit_type hi = *--end;
-            return check_and_return(decode_two_codeunits(hi, last));
+            return check_and_return(decode_two_codeunits(hi, last), policy);
         } else {
             return Policy::replace_invalid_codepoint();
         }
     }
 
   private:
-    static inline codepoint_type check_and_return(const codepoint_type& codepoint) {
+    template <typename Policy>
+    static inline codepoint_type check_and_return(const codepoint_type& codepoint, Policy) {
         if(is_valid_codepoint(codepoint)) {
             return codepoint;
         } else {

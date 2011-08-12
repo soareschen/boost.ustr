@@ -123,11 +123,10 @@ inline codepoint_type decode_four_bytes(
     );
 }
 
-template <typename Policy = error_policy>
 class utf8_encoder {
   public:
-    template <typename OutputIterator>
-    static inline void encode(const codepoint_type& codepoint, OutputIterator out) {
+    template <typename OutputIterator, typename Policy>
+    static inline void encode(const codepoint_type& codepoint, OutputIterator out, Policy policy) {
         if(has_single_codeunit(codepoint)) {
             *out++ = static_cast<char>(codepoint);
         } else if(has_double_codeunit(codepoint)) {
@@ -145,12 +144,12 @@ class utf8_encoder {
         } else {
             codepoint_type replacement_codepoint = Policy::replace_invalid_codepoint(codepoint);
             assert(replacement_codepoint != codepoint);
-            encode(replacement_codepoint, out);
+            encode(replacement_codepoint, out, policy);
         }
     }
 
-    template <typename CodeunitInputIterator>
-    static inline codepoint_type decode(CodeunitInputIterator& begin, const CodeunitInputIterator& end) {
+    template <typename CodeunitInputIterator, typename Policy>
+    static inline codepoint_type decode(CodeunitInputIterator& begin, const CodeunitInputIterator& end, Policy policy) {
         unsigned char first_byte = *begin++;
         
         if(!is_valid_first_byte(first_byte)) {
@@ -172,7 +171,7 @@ class utf8_encoder {
         }
 
         if(is_double_codeunit(first_byte)) {
-            return check_and_return(decode_two_bytes(first_byte, second_byte));
+            return check_and_return(decode_two_bytes(first_byte, second_byte), policy);
         }
 
         // 3rd byte
@@ -188,7 +187,7 @@ class utf8_encoder {
             
         if(is_triple_codeunit(first_byte)) {
             return check_and_return(decode_three_bytes(first_byte, 
-                        second_byte, third_byte));
+                        second_byte, third_byte), policy);
         }
 
         // 4th byte
@@ -204,7 +203,7 @@ class utf8_encoder {
 
         if(is_quad_codeunit(first_byte)) {
             return check_and_return(decode_four_bytes(first_byte, 
-                        second_byte, third_byte, fourth_byte));
+                        second_byte, third_byte, fourth_byte), policy);
         }
 
         // should not reach here
@@ -224,8 +223,8 @@ class utf8_encoder {
      * further previous code point. With this the altered iterator can work properly
      * when passed to decode().
      */
-    template <typename CodeunitIterator>
-    static inline codepoint_type decode_previous(const CodeunitIterator& begin, CodeunitIterator& end) {
+    template <typename CodeunitIterator, typename Policy>
+    static inline codepoint_type decode_previous(const CodeunitIterator& begin, CodeunitIterator& end, Policy policy) {
 
         // last
         if(end == begin) {
@@ -251,7 +250,7 @@ class utf8_encoder {
 
         if(!is_continuation_byte(second_last_byte)) {
             if(is_double_codeunit(second_last_byte)) {
-                return check_and_return(decode_two_bytes(second_last_byte, last_byte));
+                return check_and_return(decode_two_bytes(second_last_byte, last_byte), policy);
             } else {
                 return Policy::replace_invalid_codepoint();
             }
@@ -267,7 +266,7 @@ class utf8_encoder {
         if(!is_continuation_byte(third_last_byte)) {
             if(is_triple_codeunit(third_last_byte)) {
                 return check_and_return(decode_three_bytes(third_last_byte, 
-                        second_last_byte, last_byte));
+                        second_last_byte, last_byte), policy);
             } else {
                 return Policy::replace_invalid_codepoint();
             }
@@ -287,7 +286,7 @@ class utf8_encoder {
                     third_last_byte,
                     second_last_byte,
                     last_byte
-                ));
+                ), policy);
             } else {
                 return Policy::replace_invalid_codepoint();
             }
@@ -297,7 +296,8 @@ class utf8_encoder {
     }
 
   private:
-    static inline codepoint_type check_and_return(const codepoint_type& codepoint) {
+    template <typename Policy>
+    static inline codepoint_type check_and_return(const codepoint_type& codepoint, Policy) {
         if(is_valid_codepoint(codepoint)) {
             return codepoint;
         } else {

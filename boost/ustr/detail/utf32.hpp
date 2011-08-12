@@ -20,30 +20,30 @@ inline bool is_valid_codepoint(const codepoint_type& codepoint) {
     return codepoint <= 0x10FFFF;
 }
 
-template <typename Policy = error_policy>
 class utf32_encoder {
   public:
-    template <typename OutputIterator>
-    static inline void encode(const codepoint_type& codepoint, OutputIterator out) {
-        *out++ = check_and_return(codepoint);
+    template <typename OutputIterator, typename Policy>
+    static inline void encode(const codepoint_type& codepoint, OutputIterator out, Policy policy) {
+        *out++ = check_and_return(codepoint, policy);
     }
 
-    template <typename CodeunitInputIterator>
-    static inline codepoint_type decode(CodeunitInputIterator& begin, const CodeunitInputIterator& end) {
-        return check_and_return(*begin++);
+    template <typename CodeunitInputIterator, typename Policy>
+    static inline codepoint_type decode(CodeunitInputIterator& begin, const CodeunitInputIterator& end, Policy policy) {
+        return check_and_return(*begin++, policy);
     }
 
-    template <typename CodeunitIterator>
-    static inline codepoint_type decode_previous(const CodeunitIterator& begin, CodeunitIterator& end) {
+    template <typename CodeunitIterator, typename Policy>
+    static inline codepoint_type decode_previous(const CodeunitIterator& begin, CodeunitIterator& end, Policy policy) {
         if(end == begin) {
             return Policy::replace_invalid_codepoint();
         }
 
-        return check_and_return(*--end);
+        return check_and_return(*--end, policy);
     }
 
   private:
-    static inline codepoint_type check_and_return(const codepoint_type& codepoint) {
+    template <typename Policy>
+    static inline codepoint_type check_and_return(const codepoint_type& codepoint, Policy) {
         if(is_valid_codepoint(codepoint)) {
             return codepoint;
         } else {

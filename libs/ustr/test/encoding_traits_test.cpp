@@ -50,12 +50,12 @@ TEST_P(utf8_encoding_test, single_codepoint) {
     u8_fixture param = GetParam();
 
     string encoded;
-    utf8_encoder<error_policy>::encode(param.decoded, std::back_inserter(encoded));
+    utf8_encoder::encode(param.decoded, std::back_inserter(encoded), error_policy());
     EXPECT_EQ(encoded, param.encoded);
 
     u8_fixture::encoded_t::const_iterator begin = param.encoded.begin();
 
-    codepoint_type decoded = utf8_encoder<error_policy>::decode(begin, param.encoded.end());
+    codepoint_type decoded = utf8_encoder::decode(begin, param.encoded.end(), error_policy());
     EXPECT_EQ(begin, param.encoded.end());
     EXPECT_EQ(decoded, param.decoded);
 }
@@ -199,7 +199,7 @@ TYPED_TEST_P(encoding_traits_test, reverse_decode) {
         reverse_codepoint_iterator rend = param.decoded.rend();
         
         while(end != begin) {
-            codepoint_type decoded = EncodingTraits::encoder::decode_previous(begin, end);
+            codepoint_type decoded = EncodingTraits::encoder::decode_previous(begin, end, error_policy());
             EXPECT_EQ(decoded, *rbegin++);
         }
     }
@@ -216,7 +216,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(basic, encoding_traits_test, test_types);
 TEST(utf8_validity_test, invalid_chars) {
     codepoint_type invalid = 0x110000;
     string output;
-    EXPECT_THROW(utf8_encoder<error_policy>::encode(invalid, std::back_inserter(output)), encoding_error);
+    EXPECT_THROW(utf8_encoder::encode(invalid, std::back_inserter(output), error_policy()), encoding_error);
 }
 
 

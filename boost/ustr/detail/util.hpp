@@ -21,27 +21,27 @@ using boost::ustr::encoding::utf8::utf8_encoder;
 using boost::ustr::encoding::utf16::utf16_encoder;
 using boost::ustr::encoding::utf32::utf32_encoder;
 
-template <size_t codeunit_size, typename Policy>
+template <size_t codeunit_size>
 class encoding_engine { 
 
 };
 
-template <typename Policy>
-class encoding_engine<1, Policy> {
+template <>
+class encoding_engine<1> {
   public:
-    typedef utf8_encoder<Policy>    type;
+    typedef utf8_encoder    type;
 };
 
-template <typename Policy>
-class encoding_engine<2, Policy> {
+template <>
+class encoding_engine<2> {
   public:
-    typedef utf16_encoder<Policy>   type;
+    typedef utf16_encoder   type;
 };
 
-template <typename Policy>
-class encoding_engine<4, Policy> {
+template <>
+class encoding_engine<4> {
   public:
-    typedef utf32_encoder<Policy>   type;
+    typedef utf32_encoder   type;
 };
 
 
