@@ -6,6 +6,7 @@ exe unit_test
     string_traits_test.cpp
     encoding_traits_test.cpp
     string_literals_test.cpp
+    dynamic_string_test.cpp
     /gtest//gtest/<link>static
   : 
     <include>../../..
