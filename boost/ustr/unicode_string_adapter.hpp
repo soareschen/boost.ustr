@@ -137,6 +137,12 @@ class unicode_string_adapter
     BOOST_CONCEPT_ASSERT((unicode_string_adapter_concepts<StringT, StringTraits, encoding_traits>));
 
     template <typename CodeunitIterator>
+    class generic_codepoint_iterator {
+      public:
+        typedef codepoint_iterator<CodeunitIterator, encoder_traits, policy>    type;
+    };
+
+    template <typename CodeunitIterator>
     static this_type from_codeunits(CodeunitIterator begin, CodeunitIterator end) {
         BOOST_STATIC_ASSERT((
                  sizeof(typename std::iterator_traits<CodeunitIterator>::value_type) 
@@ -161,10 +167,10 @@ class unicode_string_adapter
     }
 
     template <typename CodeunitIterator>
-    static codepoint_iterator<CodeunitIterator, typename encoding_traits::encoder, typename encoding_traits::policy>
+    static typename generic_codepoint_iterator<CodeunitIterator>::type
     make_codepoint_iterator(CodeunitIterator current, CodeunitIterator begin, CodeunitIterator end) {
         return codepoint_iterator<CodeunitIterator, 
-               typename encoding_traits::encoder, typename encoding_traits::policy>(current, begin, end);
+               encoder_traits, policy>(current, begin, end);
     }
 
     static this_type from_const_strptr(const const_strptr_type& other) {
