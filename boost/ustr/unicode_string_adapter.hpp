@@ -13,8 +13,10 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/ustr/policy.hpp>
 #include <boost/ustr/string_traits.hpp>
-#include <boost/ustr/encoding_traits.hpp>
+#include <boost/ustr/detail/encoding_traits.hpp>
 #include <boost/ustr/detail/incl.hpp>
+#include <boost/ustr/detail/util.hpp>
+#include <boost/ustr/policy.hpp>
 #include <boost/ustr/detail/unicode_string_adapter_concepts.hpp>
 
 #define USTR(str) \
@@ -26,14 +28,20 @@ namespace ustr {
 template <
     typename StringT,
     typename StringTraits = string_traits<StringT>,
-    typename EncodingTraits = utf_encoding_traits<StringTraits>
+    //typename EncodingTraits = utf_encoding_traits<StringTraits>
+    typename EncoderTraits = typename util::encoding_engine<
+        StringTraits::codeunit_size>::type,
+    typename Policy = replace_policy<0xFFFD>
 >
 class unicode_string_adapter;
 
 template <
     typename StringT,
     typename StringTraits = string_traits<StringT>,
-    typename EncodingTraits = utf_encoding_traits<StringTraits>
+    //typename EncodingTraits = utf_encoding_traits<StringTraits>
+    typename EncoderTraits = typename util::encoding_engine<
+        StringTraits::codeunit_size>::type,
+    typename Policy = replace_policy<0xFFFD>
 >
 class unicode_string_adapter_builder;
 
@@ -48,11 +56,13 @@ typedef unicode_string_adapter<
 template <
     typename StringT,
     typename StringTraits,
-    typename EncodingTraits
+    typename EncoderTraits,
+    typename Policy
+    //typename EncodingTraits
 >
 std::ostream&
 operator <<(std::ostream& out, 
-    const unicode_string_adapter<StringT, StringTraits, EncodingTraits>& str)
+    const unicode_string_adapter<StringT, StringTraits, EncoderTraits, Policy>& str)
 {
     return out << *str;
 }
@@ -65,21 +75,27 @@ operator <<(std::ostream& out,
 template <
     typename StringT,
     typename StringTraits,
-    typename EncodingTraits
+    //typename EncodingTraits
+    typename EncoderTraits,
+    typename Policy
 >
 class unicode_string_adapter
 {
   public:
     typedef StringTraits                                            string_traits;
-    typedef EncodingTraits                                          encoding_traits;
+    //typedef EncodingTraits                                          encoding_traits;
+    typedef EncoderTraits                                           encoder_traits;
+    typedef Policy                                                  policy;
+    typedef utf_encoding_traits<
+        string_traits, encoder_traits, policy>                      encoding_traits;
 
     typedef unicode_string_adapter<
-        StringT, StringTraits, EncodingTraits>                      this_type;
+        StringT, StringTraits, EncoderTraits, Policy>               this_type;
 
     typedef unicode_string_adapter<
-        StringT, StringTraits, EncodingTraits>                      const_adapter_type;
+        StringT, StringTraits, EncoderTraits, Policy>               const_adapter_type;
     typedef unicode_string_adapter_builder<
-        StringT, StringTraits, EncodingTraits>                      mutable_adapter_type;
+        StringT, StringTraits, EncoderTraits, Policy>               mutable_adapter_type;
 
     typedef typename string_traits::string_type                     string_type;
     typedef typename string_traits::raw_strptr_type                 raw_strptr_type;
@@ -118,7 +134,7 @@ class unicode_string_adapter
 
     static const size_t codeunit_size = string_traits::codeunit_size;
 
-    BOOST_CONCEPT_ASSERT((unicode_string_adapter_concepts<StringT, StringTraits, EncodingTraits>));
+    BOOST_CONCEPT_ASSERT((unicode_string_adapter_concepts<StringT, StringTraits, encoding_traits>));
 
     template <typename CodeunitIterator>
     static this_type from_codeunits(CodeunitIterator begin, CodeunitIterator end) {
@@ -389,21 +405,27 @@ class unicode_string_adapter
 template <
     typename StringT,
     typename StringTraits,
-    typename EncodingTraits
+    //typename EncodingTraits
+    typename EncoderTraits,
+    typename Policy
 >
 class unicode_string_adapter_builder
 {
   public:
     typedef StringTraits                                            string_traits;
-    typedef EncodingTraits                                          encoding_traits;
+    //typedef EncodingTraits                                          encoding_traits;
+    typedef EncoderTraits                                           encoder_traits;
+    typedef Policy                                                  policy;
+    typedef utf_encoding_traits<
+        string_traits, encoder_traits, policy>                      encoding_traits;
 
     typedef unicode_string_adapter_builder<
-        StringT, StringTraits, EncodingTraits>                      this_type;
+        StringT, StringTraits, EncoderTraits, Policy>               this_type;
 
     typedef unicode_string_adapter<
-        StringT, StringTraits, EncodingTraits>                      const_adapter_type;
+        StringT, StringTraits, EncoderTraits, Policy>               const_adapter_type;
     typedef unicode_string_adapter_builder<
-        StringT, StringTraits, EncodingTraits>                      mutable_adapter_type;
+        StringT, StringTraits, EncoderTraits, Policy>               mutable_adapter_type;
 
     typedef typename string_traits::string_type                     string_type;
     typedef typename string_traits::raw_strptr_type                 raw_strptr_type;
@@ -437,7 +459,7 @@ class unicode_string_adapter_builder
     
     static const size_t codeunit_size = string_traits::codeunit_size;
 
-    BOOST_CONCEPT_ASSERT((unicode_string_adapter_concepts<StringT, StringTraits, EncodingTraits>));
+    BOOST_CONCEPT_ASSERT((unicode_string_adapter_concepts<StringT, StringTraits, encoding_traits>));
 
     unicode_string_adapter_builder() :
         _buffer()

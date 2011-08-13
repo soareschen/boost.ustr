@@ -10,7 +10,7 @@
 #include <vector>
 #include <algorithm>
 #include "gtest.h"
-#include <boost/ustr/encoding_traits.hpp>
+#include <boost/ustr/detail/encoding_traits.hpp>
 #include <boost/ustr/string_traits.hpp>
 #include <boost/ustr/policy.hpp>
 #include <libs/ustr/test/fixture.hpp>
@@ -110,7 +110,7 @@ TYPED_TEST_P(encoding_traits_test, fixture_test) {
     typedef TypeParam                                       StringT;
     typedef string_traits<StringT>                          StringTraits;
     typedef utf_encoding_traits< 
-        StringTraits, replace_policy<'?'> >                 EncodingTraits;
+        StringTraits >                 EncodingTraits;
     typedef typename
         StringTraits::raw_strptr_type                       raw_strptr_type;
     typedef typename
@@ -164,7 +164,7 @@ TYPED_TEST_P(encoding_traits_test, reverse_decode) {
     typedef TypeParam                                       StringT;
     typedef string_traits<StringT>                          StringTraits;
     typedef utf_encoding_traits< 
-        StringTraits, error_policy >                        EncodingTraits;
+        StringTraits>                                       EncodingTraits;
     typedef typename
         StringTraits::raw_strptr_type                       raw_strptr_type;
     typedef typename

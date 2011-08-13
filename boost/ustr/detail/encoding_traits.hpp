@@ -8,9 +8,9 @@
 
 #include <string>
 #include <iterator>
-#include <boost/ustr/policy.hpp>
 #include <boost/ustr/detail/incl.hpp>
 #include <boost/ustr/detail/util.hpp>
+#include <boost/ustr/policy.hpp>
 
 namespace boost { 
 namespace ustr {
@@ -23,7 +23,9 @@ class codepoint_iterator;
  */
 template < 
     typename StringTraits,
-    typename Policy = replace_policy<0xFFFD> >
+    typename EncoderTraits = typename util::encoding_engine<
+        StringTraits::codeunit_size>::type,
+    typename Policy = error_policy >
 class utf_encoding_traits {
   public:
     typedef StringTraits                                string_traits;
@@ -40,8 +42,7 @@ class utf_encoding_traits {
     typedef typename
         string_traits::mutable_strptr_type              mutable_strptr_type;
 
-    typedef typename util::encoding_engine<
-        string_traits::codeunit_size>::type             encoder;
+    typedef EncoderTraits                               encoder;
 
     typedef Policy                                      policy;
 

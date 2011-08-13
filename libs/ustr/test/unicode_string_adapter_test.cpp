@@ -11,8 +11,6 @@
 #include <list>
 #include <algorithm>
 #include <boost/ustr/unicode_string_adapter.hpp>
-#include <boost/ustr/string_traits.hpp>
-#include <boost/ustr/encoding_traits.hpp>
 #include <boost/ustr/detail/alt_string_traits.hpp>
 #include <libs/ustr/test/fixture.hpp>
 #include "gtest.h"
