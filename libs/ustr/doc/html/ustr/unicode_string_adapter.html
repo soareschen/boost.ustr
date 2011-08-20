@@ -6,14 +6,14 @@
 <meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
 <link rel="home" href="../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
 <link rel="up" href="../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
-<link rel="prev" href="motivation.html" title="Motivation">
+<link rel="prev" href="../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
 <link rel="next" href="unicode_string_adapter_builder.html" title="Unicode String Adapter Builder">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
 <table cellpadding="2" width="100%"><tr><td valign="top"></td></tr></table>
 <hr>
 <div class="spirit-nav">
-<a accesskey="p" href="motivation.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="unicode_string_adapter_builder.html"><img src="../images/next.png" alt="Next"></a>
+<a accesskey="p" href="../index.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="unicode_string_adapter_builder.html"><img src="../images/next.png" alt="Next"></a>
 </div>
 <div class="section">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
@@ -86,7 +86,7 @@
         Some common choices of string types are <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">basic_string</span></code>
         and <code class="computeroutput"><span class="identifier">std</span><span class="special">::</span><span class="identifier">vector</span></code>. The string types can contain characters
         of either 8-bit, 16-bit, or 32-bit in size and the appropriate UTF encoding
-        will be chosen through the default <code class="computeroutput"><span class="identifier">EncodingTraits</span></code>
+        will be chosen through the default <code class="computeroutput"><span class="identifier">EncoderTraits</span></code>
         template parameter. Below are some examples of template instance for <code class="computeroutput"><span class="identifier">unicode_string_adapter</span></code>:
       </p>
 <p>
@@ -129,7 +129,7 @@
         The <code class="computeroutput"><span class="identifier">StringTraits</span></code> template
         parameter should be supplied if the raw string type do not support STL algorithms
         or has different ways to perform common string operations such as string
-        concatenation. The <code class="computeroutput"><span class="identifier">EncodingTraits</span></code>
+        concatenation. The <code class="computeroutput"><span class="identifier">EncoderTraits</span></code>
         template parameter should be supplied if the raw string content is stored
         in encodings other than UTF-8, UTF-16, or UTF-32. For example, an adapter
         that uses STL's rope as the raw string class and Shift-JIS as the internal
@@ -146,7 +146,7 @@
     <span class="identifier">rope_string_traits</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;,</span> 
 
     <span class="comment">// custom non-Unicode encoding that "pretends" to be Unicode encoding</span>
-    <span class="identifier">shift_jis_encoding_traits</span><span class="special">&lt;</span> <span class="identifier">rope_string_traits</span><span class="special">&lt;</span><span class="keyword">char</span><span class="special">&gt;</span> <span class="special">&gt;</span>
+    <span class="identifier">shift_jis_encoder_traits</span>
 <span class="special">&gt;;</span>
 </pre>
 <p>
@@ -282,8 +282,8 @@
 <p>
         
 </p>
-<pre class="programlisting"><span class="keyword">template</span><span class="special">&lt;</span> <span class="keyword">typename</span> <span class="identifier">StringT</span><span class="special">,</span> <span class="keyword">typename</span> <span class="identifier">StringTraits</span><span class="special">,</span> <span class="keyword">typename</span> <span class="identifier">EncodingTraits</span><span class="special">&gt;</span>
-<span class="keyword">void</span> <span class="identifier">my_library_function</span><span class="special">(</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span><span class="identifier">StringT</span><span class="special">,</span> <span class="identifier">StringTraits</span><span class="special">,</span> <span class="identifier">EncodingTraits</span><span class="special">&gt;</span> <span class="identifier">str</span> <span class="special">);</span>
+<pre class="programlisting"><span class="keyword">template</span><span class="special">&lt;</span> <span class="keyword">typename</span> <span class="identifier">StringT</span><span class="special">,</span> <span class="keyword">typename</span> <span class="identifier">StringTraits</span><span class="special">,</span> <span class="keyword">typename</span> <span class="identifier">EncoderTraits</span><span class="special">,</span> <span class="keyword">typename</span> <span class="identifier">Policy</span><span class="special">&gt;</span>
+<span class="keyword">void</span> <span class="identifier">my_library_function</span><span class="special">(</span> <span class="identifier">unicode_string_adapter</span><span class="special">&lt;</span><span class="identifier">StringT</span><span class="special">,</span> <span class="identifier">StringTraits</span><span class="special">,</span> <span class="identifier">EncoderTraits</span><span class="special">,</span> <span class="identifier">Policy</span><span class="special">&gt;</span> <span class="identifier">str</span> <span class="special">);</span>
 </pre>
 <p>
       </p>
@@ -603,7 +603,7 @@
 </tr></table>
 <hr>
 <div class="spirit-nav">
-<a accesskey="p" href="motivation.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="unicode_string_adapter_builder.html"><img src="../images/next.png" alt="Next"></a>
+<a accesskey="p" href="../index.html"><img src="../images/prev.png" alt="Prev"></a><a accesskey="u" href="../index.html"><img src="../images/up.png" alt="Up"></a><a accesskey="h" href="../index.html"><img src="../images/home.png" alt="Home"></a><a accesskey="n" href="unicode_string_adapter_builder.html"><img src="../images/next.png" alt="Next"></a>
 </div>
 </body>
 </html>

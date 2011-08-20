@@ -1,0 +1,105 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>Class template dynamic_unicode_string_impl</title>
+<link rel="stylesheet" href="../../boostbook.css" type="text/css">
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="../../index.html" title="Chapter&#160;1.&#160;Ustr 0.1">
+<link rel="up" href="../../reference.html#header.boost.ustr.dynamic_unicode_string_hpp" title="Header &lt;boost/ustr/dynamic_unicode_string.hpp&gt;">
+<link rel="prev" href="dynamic_unicode_string.html" title="Class dynamic_unicode_string">
+<link rel="next" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html" title="Class dynamic_codepoint_iterator_impl">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table cellpadding="2" width="100%"><tr><td valign="top"></td></tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="dynamic_unicode_string.html"><img src="../../images/prev.png" alt="Prev"></a><a accesskey="u" href="../../reference.html#header.boost.ustr.dynamic_unicode_string_hpp"><img src="../../images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../images/home.png" alt="Home"></a><a accesskey="n" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html"><img src="../../images/next.png" alt="Next"></a>
+</div>
+<div class="refentry">
+<a name="boost.ustr.dynamic_unicode_string__id403526"></a><div class="titlepage"></div>
+<div class="refnamediv">
+<h2><span class="refentrytitle">Class template dynamic_unicode_string_impl</span></h2>
+<p>boost::ustr::dynamic_unicode_string_impl</p>
+</div>
+<h2 xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv-title">Synopsis</h2>
+<div xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" class="refsynopsisdiv"><pre class="synopsis"><span class="comment">// In header: &lt;<a class="link" href="../../reference.html#header.boost.ustr.dynamic_unicode_string_hpp" title="Header &lt;boost/ustr/dynamic_unicode_string.hpp&gt;">boost/ustr/dynamic_unicode_string.hpp</a>&gt;
+
+</span><span class="keyword">template</span><span class="special">&lt;</span><span class="keyword">typename</span> StringT<span class="special">,</span> <span class="keyword">typename</span> StringTraits<span class="special">,</span> <span class="keyword">typename</span> EncoderTraits<span class="special">,</span> 
+         <span class="keyword">typename</span> Policy<span class="special">&gt;</span> 
+<span class="keyword">class</span> <a class="link" href="dynamic_unicode_string__id403526.html" title="Class template dynamic_unicode_string_impl">dynamic_unicode_string_impl</a> <span class="special">:</span>
+  <span class="keyword">public</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">ustr</span><span class="special">::</span><span class="identifier">dynamic_unicode_string_object</span>
+<span class="special">{</span>
+<span class="keyword">public</span><span class="special">:</span>
+  <span class="comment">// types</span>
+  <span class="keyword">typedef</span> <a class="link" href="dynamic_unicode_string__id403526.html" title="Class template dynamic_unicode_string_impl">dynamic_unicode_string_impl</a><span class="special">&lt;</span> <span class="identifier">StringT</span><span class="special">,</span> <span class="identifier">StringTraits</span><span class="special">,</span> <span class="identifier">EncoderTraits</span><span class="special">,</span> <span class="identifier">Policy</span> <span class="special">&gt;</span> <a name="boost.ustr.dynamic_unicode_string__id403526.this_type"></a><span class="identifier">this_type</span><span class="special">;</span>              
+  <span class="keyword">typedef</span> <a class="link" href="unicode_string_adapter.html" title="Class template unicode_string_adapter">unicode_string_adapter</a><span class="special">&lt;</span> <span class="identifier">StringT</span><span class="special">,</span> <span class="identifier">StringTraits</span><span class="special">,</span> <span class="identifier">EncoderTraits</span><span class="special">,</span> <span class="identifier">Policy</span> <span class="special">&gt;</span>      <a name="boost.ustr.dynamic_unicode_string__id403526.const_adapter_type"></a><span class="identifier">const_adapter_type</span><span class="special">;</span>     
+  <span class="keyword">typedef</span> <span class="identifier">const_adapter_type</span><span class="special">::</span><span class="identifier">codepoint_iterator_type</span>                                 <a name="boost.ustr.dynamic_unicode_string__id403526.codepoint_iterator_type"></a><span class="identifier">codepoint_iterator_type</span><span class="special">;</span>
+
+  <span class="comment">// member classes/structs/unions</span>
+
+  <span class="keyword">class</span> <a class="link" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html" title="Class dynamic_codepoint_iterator_impl">dynamic_codepoint_iterator_impl</a> <span class="special">:</span>
+    <span class="keyword">public</span> <span class="identifier">boost</span><span class="special">::</span><span class="identifier">ustr</span><span class="special">::</span><span class="identifier">dynamic_codepoint_iterator_object</span>
+  <span class="special">{</span>
+  <span class="keyword">public</span><span class="special">:</span>
+    <span class="comment">// <a class="link" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html#boost.ustr.dynamic_unicode_string__id403526.dynamic_codepoint_itera_id403552construct-copy-destruct">construct/copy/destruct</a></span>
+    <a class="link" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html#id403626-bb"><span class="identifier">dynamic_codepoint_iterator_impl</span></a><span class="special">(</span><span class="identifier">codepoint_iterator_type</span><span class="special">)</span><span class="special">;</span>
+    <a class="link" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html#id403632-bb"><span class="special">~</span><span class="identifier">dynamic_codepoint_iterator_impl</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
+
+    <span class="comment">// <a class="link" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html#id403559-bb">public member functions</a></span>
+    <span class="keyword">const</span> <span class="identifier">codepoint_type</span> <a class="link" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html#id403562-bb"><span class="identifier">dereference</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+    <span class="keyword">void</span> <a class="link" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html#id403569-bb"><span class="identifier">increment</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+    <span class="keyword">void</span> <a class="link" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html#id403576-bb"><span class="identifier">decrement</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+    <span class="keyword">bool</span> <a class="link" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html#id403583-bb"><span class="identifier">equals</span></a><span class="special">(</span><span class="keyword">const</span> <a class="link" href="dynamic_codepoint_itera_id348978.html" title="Class dynamic_codepoint_iterator_object">dynamic_codepoint_iterator_object</a> <span class="special">*</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+    <span class="keyword">void</span> <span class="special">*</span> <a class="link" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html#id403599-bb"><span class="identifier">get_raw_iterator</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+    <span class="keyword">const</span> <a class="link" href="unicode_string_type.html" title="Class unicode_string_type">unicode_string_type</a> <span class="special">&amp;</span> <a class="link" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html#id403606-bb"><span class="identifier">get_type</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+    <a class="link" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html" title="Class dynamic_codepoint_iterator_impl">dynamic_codepoint_iterator_impl</a> <span class="special">*</span> <a class="link" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html#id403617-bb"><span class="identifier">clone</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+  <span class="special">}</span><span class="special">;</span>
+
+  <span class="comment">// <a class="link" href="dynamic_unicode_string__id403526.html#boost.ustr.dynamic_unicode_string__id403526construct-copy-destruct">construct/copy/destruct</a></span>
+  <a class="link" href="dynamic_unicode_string__id403526.html#id403695-bb"><span class="identifier">dynamic_unicode_string_impl</span></a><span class="special">(</span><span class="keyword">const</span> <a class="link" href="dynamic_unicode_string__id403526.html#boost.ustr.dynamic_unicode_string__id403526.const_adapter_type">const_adapter_type</a> <span class="special">&amp;</span><span class="special">)</span><span class="special">;</span>
+  <a class="link" href="dynamic_unicode_string__id403526.html#id403704-bb"><span class="special">~</span><span class="identifier">dynamic_unicode_string_impl</span></a><span class="special">(</span><span class="special">)</span><span class="special">;</span>
+
+  <span class="comment">// <a class="link" href="dynamic_unicode_string__id403526.html#id403653-bb">public member functions</a></span>
+  <a class="link" href="dynamic_codepoint_itera_id348978.html" title="Class dynamic_codepoint_iterator_object">dynamic_codepoint_iterator_object</a> <span class="special">*</span> <a class="link" href="dynamic_unicode_string__id403526.html#id403656-bb"><span class="identifier">begin</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+  <a class="link" href="dynamic_codepoint_itera_id348978.html" title="Class dynamic_codepoint_iterator_object">dynamic_codepoint_iterator_object</a> <span class="special">*</span> <a class="link" href="dynamic_unicode_string__id403526.html#id403666-bb"><span class="identifier">end</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+  <span class="keyword">const</span> <a class="link" href="unicode_string_type.html" title="Class unicode_string_type">unicode_string_type</a> <span class="special">&amp;</span> <a class="link" href="dynamic_unicode_string__id403526.html#id403675-bb"><span class="identifier">get_type</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+  <a class="link" href="dynamic_unicode_string__id403526.html#boost.ustr.dynamic_unicode_string__id403526.this_type">this_type</a> <span class="special">*</span> <a class="link" href="dynamic_unicode_string__id403526.html#id403685-bb"><span class="identifier">clone</span></a><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span>
+<span class="special">}</span><span class="special">;</span></pre></div>
+<div class="refsect1">
+<a name="id627843"></a><h2>Description</h2>
+<div class="refsect2">
+<a name="id627847"></a><h3>
+<a name="boost.ustr.dynamic_unicode_string__id403526construct-copy-destruct"></a><code class="computeroutput">dynamic_unicode_string_impl</code> 
+        public
+       construct/copy/destruct</h3>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"><pre class="literallayout"><a name="id403695-bb"></a><span class="identifier">dynamic_unicode_string_impl</span><span class="special">(</span><span class="keyword">const</span> <a class="link" href="dynamic_unicode_string__id403526.html#boost.ustr.dynamic_unicode_string__id403526.const_adapter_type">const_adapter_type</a> <span class="special">&amp;</span> str<span class="special">)</span><span class="special">;</span></pre></li>
+<li class="listitem"><pre class="literallayout"><a name="id403704-bb"></a><span class="special">~</span><span class="identifier">dynamic_unicode_string_impl</span><span class="special">(</span><span class="special">)</span><span class="special">;</span></pre></li>
+</ol></div>
+</div>
+<div class="refsect2">
+<a name="id627949"></a><h3>
+<a name="id403653-bb"></a><code class="computeroutput">dynamic_unicode_string_impl</code> public member functions</h3>
+<div class="orderedlist"><ol class="orderedlist" type="1">
+<li class="listitem"><pre class="literallayout"><a class="link" href="dynamic_codepoint_itera_id348978.html" title="Class dynamic_codepoint_iterator_object">dynamic_codepoint_iterator_object</a> <span class="special">*</span> <a name="id403656-bb"></a><span class="identifier">begin</span><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span></pre></li>
+<li class="listitem"><pre class="literallayout"><a class="link" href="dynamic_codepoint_itera_id348978.html" title="Class dynamic_codepoint_iterator_object">dynamic_codepoint_iterator_object</a> <span class="special">*</span> <a name="id403666-bb"></a><span class="identifier">end</span><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span></pre></li>
+<li class="listitem"><pre class="literallayout"><span class="keyword">const</span> <a class="link" href="unicode_string_type.html" title="Class unicode_string_type">unicode_string_type</a> <span class="special">&amp;</span> <a name="id403675-bb"></a><span class="identifier">get_type</span><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span></pre></li>
+<li class="listitem"><pre class="literallayout"><a class="link" href="dynamic_unicode_string__id403526.html#boost.ustr.dynamic_unicode_string__id403526.this_type">this_type</a> <span class="special">*</span> <a name="id403685-bb"></a><span class="identifier">clone</span><span class="special">(</span><span class="special">)</span> <span class="keyword">const</span><span class="special">;</span></pre></li>
+</ol></div>
+</div>
+</div>
+</div>
+<table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
+<td align="left"></td>
+<td align="right"><div class="copyright-footer">Copyright &#169; 2011 Soares Chen Ruo Fei<p>
+        Distributed under the Boost Software License, Version 1.0. (See accompanying
+        file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt" target="_top">http://www.boost.org/LICENSE_1_0.txt</a>)
+      </p>
+</div></td>
+</tr></table>
+<hr>
+<div class="spirit-nav">
+<a accesskey="p" href="dynamic_unicode_string.html"><img src="../../images/prev.png" alt="Prev"></a><a accesskey="u" href="../../reference.html#header.boost.ustr.dynamic_unicode_string_hpp"><img src="../../images/up.png" alt="Up"></a><a accesskey="h" href="../../index.html"><img src="../../images/home.png" alt="Home"></a><a accesskey="n" href="dynamic_unicode_string__id403526/dynamic_codepoint_itera_id403552.html"><img src="../../images/next.png" alt="Next"></a>
+</div>
+</body>
+</html>

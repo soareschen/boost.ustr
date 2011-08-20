@@ -1,7 +1,7 @@
 
 
 #include "gtest.h"
-#include <boost/ustr/dynamic_unicode_string.hpp>
+#include <boost/ustr/detail/dynamic_unicode_string.hpp>
 
 using namespace boost::ustr;
 
