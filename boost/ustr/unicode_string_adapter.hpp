@@ -111,8 +111,9 @@ class unicode_string_adapter
         encoding_traits::codepoint_iterator_type                    codepoint_iterator_type;
 
     typedef std::back_insert_iterator<mutable_adapter_type>         codepoint_output_iterator_type;
-    //typedef custom_insert_iterator<mutable_adapter_type, 
-    //        codeunit_append_inserter_traits<mutable_adapter_type> > codeunit_output_iterator_type;
+
+    typedef typename
+        encoding_traits::iterator_tag                               iterator_tag;
         
     typedef typename
         string_traits::raw_char_type                                raw_char_type;
@@ -139,7 +140,8 @@ class unicode_string_adapter
     template <typename CodeunitIterator>
     class generic_codepoint_iterator {
       public:
-        typedef codepoint_iterator<CodeunitIterator, encoder_traits, policy>    type;
+        typedef codepoint_iterator<
+            CodeunitIterator, encoder_traits, policy, iterator_tag> type;
     };
 
     template <typename CodeunitIterator>

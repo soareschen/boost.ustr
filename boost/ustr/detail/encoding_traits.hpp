@@ -15,7 +15,7 @@
 namespace boost { 
 namespace ustr {
 
-template <typename CodeunitIterator, typename Encoder, typename Policy>
+template <typename CodeunitIterator, typename Encoder, typename Policy, typename IteratorTag>
 class codepoint_iterator;
 
 /*
@@ -25,10 +25,12 @@ template <
     typename StringTraits,
     typename EncoderTraits = typename util::encoding_engine<
         StringTraits::codeunit_size>::type,
-    typename Policy = error_policy >
+    typename Policy = error_policy,
+    typename IteratorTag = typename EncoderTraits::iterator_tag >
 class utf_encoding_traits {
   public:
     typedef StringTraits                                string_traits;
+    typedef IteratorTag                                 iterator_tag;
 
     typedef typename 
         string_traits::codeunit_type                    codeunit_type;
@@ -47,7 +49,8 @@ class utf_encoding_traits {
     typedef Policy                                      policy;
 
     typedef codepoint_iterator<
-        codeunit_iterator_type, encoder, Policy>        codepoint_iterator_type;
+        codeunit_iterator_type, encoder, 
+        Policy, iterator_tag>                           codepoint_iterator_type;
 
     static const bool replace_malformed = Policy::replace_malformed;
     
@@ -82,13 +85,17 @@ class utf_encoding_traits {
     
 };
 
-template <typename CodeunitIterator, typename Encoder, typename Policy>
+template <
+    typename CodeunitIterator, 
+    typename EncoderTraits, 
+    typename Policy, 
+    typename IteratorTag = typename EncoderTraits::iterator_tag>
 class codepoint_iterator :
-    public std::iterator<std::bidirectional_iterator_tag, codepoint_type>
+    public std::iterator<IteratorTag, codepoint_type>
 {
   public:
     typedef CodeunitIterator                    codeunit_iterator_type;
-    typedef Encoder                             encoder;
+    typedef EncoderTraits                       encoder;
 
     typedef codepoint_type                      reference;
     typedef const codepoint_type                const_reference;
@@ -212,8 +219,8 @@ class codepoint_iterator :
   private:
     mutable codeunit_iterator_type          _current;
     mutable codeunit_iterator_type          _next;
-    codeunit_iterator_type            _begin;
-    codeunit_iterator_type            _end;
+    codeunit_iterator_type                  _begin;
+    codeunit_iterator_type                  _end;
 };
 
 

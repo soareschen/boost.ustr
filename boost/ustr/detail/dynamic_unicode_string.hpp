@@ -1,4 +1,9 @@
 
+//          Copyright Soares Chen Ruo Fei 2011.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          http://www.boost.org/LICENSE_1_0.txt)
+
 #include <boost/ustr/unicode_string_adapter.hpp>
 
 namespace boost {
@@ -49,6 +54,7 @@ class dynamic_codepoint_iterator_object
     virtual bool equals(const dynamic_codepoint_iterator_object* other) const = 0;
     virtual const unicode_string_type& get_type() const = 0;
     virtual void* get_raw_iterator() const = 0;
+    virtual dynamic_codepoint_iterator_object* clone() const = 0;
 
     virtual ~dynamic_codepoint_iterator_object() { }
 };
@@ -58,6 +64,7 @@ class dynamic_unicode_string_object {
     virtual dynamic_codepoint_iterator_object* begin() const = 0;
     virtual dynamic_codepoint_iterator_object* end() const = 0;
     virtual const unicode_string_type& get_type() const = 0;
+    virtual dynamic_unicode_string_object* clone() const = 0;
 
     virtual ~dynamic_unicode_string_object() { }
 };
@@ -78,7 +85,7 @@ class dynamic_codepoint_iterator :
         : _it(it) { }
 
     dynamic_codepoint_iterator(const dynamic_codepoint_iterator& other)
-        : _it(other._it) { }
+        : _it(other._it->clone()) { }
 
     const codepoint_type operator *() const {
         return get()->dereference();
@@ -140,7 +147,7 @@ class dynamic_unicode_string {
     { }
 
     dynamic_unicode_string(const dynamic_unicode_string& other)
-        : _str(other._str)
+        : _str(other._str->clone())
     { }
 
     dynamic_codepoint_iterator begin() const {
@@ -187,6 +194,8 @@ template <
     typename Policy>
 class dynamic_unicode_string_impl : public dynamic_unicode_string_object {
   public:
+    typedef dynamic_unicode_string_impl<
+        StringT, StringTraits, EncoderTraits, Policy>   this_type;
     typedef unicode_string_adapter<
         StringT, StringTraits, EncoderTraits, Policy>   const_adapter_type;
     typedef typename
@@ -233,6 +242,10 @@ class dynamic_unicode_string_impl : public dynamic_unicode_string_object {
                 StringT, StringTraits, EncoderTraits, Policy>::type;
         }
 
+        virtual dynamic_codepoint_iterator_impl* clone() const {
+            return new dynamic_codepoint_iterator_impl(_it);
+        }
+
         virtual ~dynamic_codepoint_iterator_impl() { }
       private:
         codepoint_iterator_type _it;
@@ -249,6 +262,10 @@ class dynamic_unicode_string_impl : public dynamic_unicode_string_object {
     virtual const unicode_string_type& get_type() const {
         return unicode_string_type_identifier<
             StringT, StringTraits, EncoderTraits, Policy>::type;
+    }
+
+    virtual this_type* clone() const {
+        return new this_type(_str);
     }
 
     virtual ~dynamic_unicode_string_impl() { }

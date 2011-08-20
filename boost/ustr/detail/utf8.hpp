@@ -6,6 +6,7 @@
 
 #pragma once
 #include <assert.h>
+#include <iterator>
 #include <boost/ustr/detail/incl.hpp>
 #include <boost/ustr/policy.hpp>
 
@@ -125,6 +126,8 @@ inline codepoint_type decode_four_bytes(
 
 class utf8_encoder {
   public:
+    typedef std::bidirectional_iterator_tag     iterator_tag;
+
     template <typename OutputIterator, typename Policy>
     static inline void encode(const codepoint_type& codepoint, OutputIterator out, Policy policy) {
         if(has_single_codeunit(codepoint)) {

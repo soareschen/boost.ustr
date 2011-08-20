@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <iterator>
 #include <boost/ustr/detail/incl.hpp>
 #include <boost/ustr/policy.hpp>
 
@@ -22,6 +23,8 @@ inline bool is_valid_codepoint(const codepoint_type& codepoint) {
 
 class utf32_encoder {
   public:
+    typedef std::bidirectional_iterator_tag     iterator_tag;
+
     template <typename OutputIterator, typename Policy>
     static inline void encode(const codepoint_type& codepoint, OutputIterator out, Policy policy) {
         *out++ = check_and_return(codepoint, policy);

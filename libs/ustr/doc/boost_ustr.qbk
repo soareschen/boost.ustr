@@ -17,6 +17,15 @@
         [@http://www.boost.org/LICENSE_1_0.txt])
     ]
 ]
+[section:preface Preface]
+
+[note Boost.Ustr is developed as a Google Summer of Code 2011 project and is currently at early stage developement]
+
+[section:acknowledgement Acknowledgement]
+I would like to thank my Google Summer of Code mentor, Chad Nelson, for spending his precious time to guide and help me 
+all along in this project. Without his guidance and existing Unicode library, I wouldn't been able to achieve the current flexible 
+design of Boost.Ustr. His help is very much appreciated.
+[endsect]
 
 [section:introduction Introduction]
 Boost.Ustr provides a Unicode string adapter class that wraps traditional string containers 
@@ -25,7 +34,7 @@ such as `std::string` to attach Unicode encoding semantics to it.
 The main class that is used in Boost.Ustr is `unicode_string_adapter` with the following template signature:
 
 ``
-    template <typename StringT, typename StringTraits, typename EncodingTraits>
+    template <typename StringT, typename StringTraits, typename EncoderTraits, typename Policy>
     class unicode_string_adapter;
 ``
 
@@ -33,38 +42,37 @@ where
 
 * `StringT` is the raw string type that will be wrapped.
 * `StringTraits` is the facade to the manipulation of the raw string.
-* `EncodingTraits` implements the encoding/decoding operations of the raw string content.
+* `EncoderTraits` implements the encoding/decoding operations of the raw string content.
+* `Policy` determines the recovery option used when encountering encoding/decoding error.
 
-Boost.Ustr has default `StringTraits` and `EncodingTraits` for most of the containers. 
+Boost.Ustr has default `StringTraits` and `EncoderTraits` for most of the containers. 
 So it is usually sufficient to supply just the raw string type to the template.
 for example, a Unicode string adapter with std::string as the raw string type would be instantiated as
 
 ``
     class unicode_string_adapter< std::string >
 ``
+[endsect]
 
 [section:benefits Benefits over Raw Strings]
 
 There are several benefits to wrap raw string types within `unicode_string_adapter` instead of 
 using the raw strings directly.
 
-[h3 Code Point Level Access]
+[h4 Code Point Level Access]
 `unicode_string_adapter` encapsulates the encoding/decoding operations of code units of different 
 Unicode encodings. Instead it returns code point iterators in the `begin()` and `end()` methods so that
 developers do not have to concern on which encoding the raw string is actually using.
 
-[h3 Automatic Conversion Between Template Instances]
+[h4 Automatic Conversion Between Template Instances]
 A template instance of `unicode_string_adapter` can be automatically converted to another template instance. 
 This is useful for cases such as when the developer uses strings with encoding different from the 
 encoding expected from library APIs.
 
-[h3 Efficient Copy with Immutable String]
+[h4 Efficient Copy with Immutable String]
 `unicode_string_adapter` is an immutable string class. Internally the raw string is stored on the heap 
 and uses smart pointer to share the raw string among different objects. This gives more efficient copy operation
 that is faster than many raw string types that perform deep copying, including std::string in C++11.
-
-[endsect]
-
 [endsect]
 
 [section:motivation Motivation]
@@ -91,6 +99,7 @@ awareness.
 
 [endsect]
 
+[endsect]
 
 [section:unicode_string_adapter Unicode String Adapter]
 
@@ -121,7 +130,7 @@ and `codepoint_type` and everything else should continue to work properly.
 Before using Boost.Ustr, developer first need to choose a specific string type to make a template instantiation of
 `unicode_string_adapter`. Some common choices of string types are `std::basic_string` and `std::vector`.
 The string types can contain characters of either 8-bit, 16-bit, or 32-bit in size and the appropriate
-UTF encoding will be chosen through the default `EncodingTraits` template parameter. Below are some examples
+UTF encoding will be chosen through the default `EncoderTraits` template parameter. Below are some examples
 of template instance for `unicode_string_adapter`:
 
 ``
@@ -153,7 +162,7 @@ UTF-8/16/32 encodings respectively:
 There are also two optional template parameters that developer can provide to change the internal behavior of
 `unicode_string_adapter`. The `StringTraits` template parameter should be supplied if the raw string type 
 do not support STL algorithms or has different ways to perform common string operations such as string concatenation.
-The `EncodingTraits` template parameter should be supplied if the raw string content is stored in encodings other
+The `EncoderTraits` template parameter should be supplied if the raw string content is stored in encodings other
 than UTF-8, UTF-16, or UTF-32. For example, an adapter that uses STL's rope as the raw string class and Shift-JIS 
 as the internal encoding may be written as:
 
@@ -166,7 +175,7 @@ as the internal encoding may be written as:
         rope_string_traits<char>, 
 
         // custom non-Unicode encoding that "pretends" to be Unicode encoding
-        shift_jis_encoding_traits< rope_string_traits<char> >
+        shift_jis_encoder_traits
     >;
 ``
 
@@ -250,8 +259,8 @@ that accepts generic `unicode_string_adapter` and another is to accept specific 
 `unicode_string_adapter`. First, the generic API could be constructed similar to as follow:
 
 ``
-    template< typename StringT, typename StringTraits, typename EncodingTraits>
-    void my_library_function( unicode_string_adapter<StringT, StringTraits, EncodingTraits> str );
+    template< typename StringT, typename StringTraits, typename EncoderTraits, typename Policy>
+    void my_library_function( unicode_string_adapter<StringT, StringTraits, EncoderTraits, Policy> str );
 ``
 
 The benefit of this generic approach is that the library will always use the same `unicode_string_adapter` template
@@ -717,61 +726,55 @@ Most of the requirements of `StringTraits` are pretty self explanatory in the de
 
 [endsect]
 
-[section:custom_encoding_traits Custom Encoding Traits]
-The `EncodingTraits` implements the actual encoding/decoding operation of different UTF encodings and works closely with 
-`StringTraits` to perform the actual raw string-related operations. There are only two main interface that `EncodingTraits` 
-provides, which will be explained below.
+[section:custom_encoder_traits Custom Encoder Traits]
+The `EncoderTraits` provides a generic implementation of a given encoding by manipulating on iterators. An `EncoderTraits` has the 
+following implementation requirements:
 
 ``
-static void EncodingTraits::append_codepoint(
-        typename StringTraits::mutable_strptr_type& str,
-        const codepoint_type& codepoint);
-``
+class EncoderTraits {
+  public:
+    typedef iterator_tag;
 
-This method takes a reference to a `mutable_strptr_type` and a const reference to codepoint and append the encoded code point 
-to the end of the buffer. This is the core encoding operation that `EncodingTraits` provides.
+    template <typename OutputIterator, typename Policy>
+    static void encode(const codepoint_type& codepoint, OutputIterator out, Policy);
 
-``
-class EncodingTraits::codepoint_iterator_type :
-    public std::iterator<std::bidirectional_iterator_tag, codepoint_type>
-{
-  public:       
-    codepoint_iterator_type(
-        typename StringTraits::codeunit_iterator_type codeunit_it,
-        typename StringTraits::codeunit_iterator_type begin,
-        typename StringTraits::codeunit_iterator_type end);
-
-    const codepoint_type operator *() const;
-    ...
+    template <typename CodeunitInputIterator, typename Policy>
+    static inline codepoint_type decode(CodeunitInputIterator& current, const CodeunitInputIterator& end, Policy policy);
+    
+    // Optional
+    template <typename CodeunitIterator, typename Policy>
+    static inline codepoint_type decode_previous(const CodeunitIterator& begin, CodeunitIterator& current, Policy policy);
 };
 ``
 
-`EncodingTraits` provides a codepoint iterator that does decoding operations on the fly when being dereferenced through 
-`operator *()`. The code point iterator class must fulfil the bidirectional iterator requirement and also the two interfaces 
-specified above.
+The `iterator_tag` typedef defines the iterator category the encoding supports. Typically `std::bidirectional_iterator_tag` is 
+defined here if the `EncoderTraits` support decoding in both directions, while `std::forward_iterator_tag` should be defined for 
+encodings that do not support reverse decoding such as the multibyte character sets (MBCS).
 
-The constructor of the code point iterator takes three code unit iterators corresponding to the current position, beginning 
-position, and end position respectively so that it can know the boundaries while transversing through the code units. The begin 
-and end code unit iterators are both required as the code point iterator would increment or decrement in either directions, and 
-it is important to avoid out of bound access of the underlying code unit iterator which can cause undefined behavior.
+The `encode()` function encodes a given code point into it's corresponding encoded code units and store the results into the 
+given output iterator.
 
-The `value_type` of the code point iterator is `codepoint_type`, and it should be treated like a virtual pointer to code points, 
-not code units. The code point iterator hides the code unit abstraction layer so the user of the iterator should not require any 
-knowledge on the underlying code units and encodings.
+The `decode()` function accepts a reference to the current iterator position and increment the iterator to the next code point 
+position while reading the code units at the same time. A const reference to the end iterator is also provided to make sure that 
+the decoding will not go out of bound and produce undefined behavior.
 
-With custom `EncodingTraits`, it is possible to simulate Unicode behavior for strings that are not encoded in Unicode encodings. 
-For example, one may implement custom encoding traits for the Shift-JIS japanese encoding to make the strings backward compatible 
-with old applications while using these strings as if they are Unicode strings.
+The `decode_previous()` function decodes in the reverse direction. It's first argument is a const reference to the begin iterator to 
+make sure that the reverse decoding will not go out of bound. The second argument is a reference to the current iterator position 
+and it will be decremented until the position of the first code unit of the currently decoded code point. 
 
-Another possibility for custom `EncodingTraits` is to implement URL escaped or HTML entities formatted encodings for ASCII-encoded 
-strings. The custom encoding traits can then perform proper escape during encoding and decoding operations and thus allows developers 
-to treat the Unicode-escaped ASCII-strings as if they are actual Unicode strings.
+It is important to note that the resulting position of the current iterator in `decode_previous()` is different from `decode()`, 
+which points to the next undecoded code point. However both the decoding functions must point to the first code unit of a code point 
+despite the differences. Referring to the default UTF encoding implementation, one should increase the iterator of `decode()` by 
+calling `*current++`, while decrease the iterator of `decode_previous()` by calling `--current`.
 
+`decode_previous()` is optional and is only required when the encoder traits supports bidirectional iterator. Developers of 
+generic Unicode algorithms should take note of the iterator tag of a given code point iterator and be careful of not calling 
+`operator --()` in a forward iterator. Currently such call on forward iterator will result in a long list of template instantiation 
+error which may be especially hard to debug.
 [endsect]
 
 [section:replace_policy Replace Policy]
-The `EncodingTraits` is also responsible to decide what to do when there is error during encoding/decoding operations. By default,
-the default `encoding_traits` class provides an optional template parameter `Policy` that is used to decide the recovery action. 
+The `Policy` template parameter determines the error policy and replacement code point used should encoding errors occur.
 The default policy class for this template parameter is `replace_policy<0xFFFD>`, which is a templated replacement policy class that 
 replaces an invalid code point with the code point specified in the template parameter and 0xFFFD corresponds to the standard 
 Unicode replacement character �.
@@ -779,26 +782,29 @@ Unicode replacement character �.
 There is also another class provided by Boost.Ustr which is the `error_policy`, which would throw an `encoding_error` exception 
 when any of it's methods is called.
 
-To implement a custom policy class, one simply has to implement two static methods within the class which are:
+To implement a custom policy class, one simply has to implement a flag and two static methods within the class which are:
 
 ``
 class Policy {
+    static bool replace_malformed;
+
     static codepoint_type replace_invalid_codepoint();
     static codepoint_type replace_invalid_codepoint(codepoint_type original);
 };
 ``
 
+The `replace_malformed` flag tells `unicode_string_adapter` to whether replace invalid code units within a string if it is found 
+to be malformed during construction. If the flag is set to false, the original malformed string will not be corrected in place, 
+although replacement will take place on the fly during the decoding stage.
+
 The zero-argument version of `replace_invalid_codepoint()` is used during decoding error while the one-argument version is used 
 during encoding of a code point with invalid value.
 
-It is recommended that custom encoding traits also accept the policy class in their template parameters to allow users to customize 
-the error behavior according to their needs.
-
+Due to a limitation in Visual C++, the `Policy` class cannot be specified in the `EncoderTraits` by explicitly specifying the 
+template parameters. This is why all methods in `EncoderTraits` has to accept a policy object so that the compiler can infer the 
+template parameter through this object.
 [endsect]
 
-[endsect]
-
-[section:examples Examples]
 [endsect]
 
 [xinclude autodoc.xml]
