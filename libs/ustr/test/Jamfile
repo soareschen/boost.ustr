@@ -9,4 +9,5 @@ exe unit_test
     /gtest//gtest/<link>static
   : 
     <include>../../..
+    <link>static
     <threading>multi ;
